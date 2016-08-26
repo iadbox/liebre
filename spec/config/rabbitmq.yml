@@ -1,0 +1,17 @@
+development:
+  :host: localhost
+  :port: 5672
+  :user: guest
+  :pass: guest
+  :vhost: /
+  :threaded: true
+  :heartbeat: 2
+
+test:
+  :host: localhost
+  :port: 5672
+  :user: guest
+  :pass: guest
+  :vhost: /
+  :threaded: true
+  :heartbeat: 2

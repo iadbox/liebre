@@ -1,0 +1,36 @@
+consumers:
+  some_consumer:
+    class_name: MyConsumer
+    rpc: false
+    pool_size: 1 #threads per consumers
+    exchange:
+      name: "exchange_name"
+      type: "exchange_type" #fanout|direct...
+      opts:
+        durable: true
+    queue:
+      name: "queue_name"
+      opts:
+        durable: true  
+        
+  some_rpc:
+    class_name: MyRPC
+    rpc: true
+    pool_size: 1 #threads per consumers
+    exchange:
+      name: "exchange_name"
+      type: "exchange_type" #fanout|direct...
+      opts:
+        durable: true
+    queue:
+      name: "queue_name"
+      opts:
+        durable: true
+  
+publishers:
+  some_publisher:
+    exchange:
+      name: "exchange_name"
+      type: "exchange_type" #fanout|direct...
+      opts:
+        durable: true
