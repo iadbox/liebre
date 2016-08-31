@@ -3,8 +3,6 @@ require 'yaml'
 module Liebre
   class Runner
     class Consumers
-      
-      autoload :Starter, "segments/amqp/rpc/starter"
 
       def initialize connection
         @connection = connection
@@ -19,7 +17,7 @@ module Liebre
       end
 
       def start name
-        params = config.fetch(name)
+        params = consumers.fetch(name)
 
         starter = Starter.new(connection, params)
         starter.call

@@ -1,7 +1,8 @@
 module Liebre
   class Runner
     
-    autoload :Starter, 'liebre/runner/starter'
+    autoload :Consumers, 'liebre/runner/consumers'
+    autoload :Starter,   'liebre/runner/starter'
     
     RETRY_INTERVAL = 5
 
@@ -34,8 +35,8 @@ module Liebre
     end
 
     def start_consumers
-      rpc = Consumers.new(conn_manager.get)
-      rpc.start_all
+      consumers = Consumers.new(conn_manager.get)
+      consumers.start_all
     end
 
     def log_and_wait e
@@ -45,7 +46,7 @@ module Liebre
     end
 
     def logger
-      $logger
+      Liebre.logger
     end
 
     def conn_manager

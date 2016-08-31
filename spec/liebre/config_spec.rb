@@ -1,4 +1,4 @@
-require 'liebre/config'
+require 'spec_helper'
 
 RSpec.describe Liebre::Config do
   
@@ -13,7 +13,7 @@ RSpec.describe Liebre::Config do
   before do
     described_class.config_path     = config_path
     described_class.connection_path = connection_path
-    described_class.env = "test"
+    described_class.env = "some_env"
   end
 
   subject { described_class.new }
@@ -23,7 +23,7 @@ RSpec.describe Liebre::Config do
     it do
       expect(described_class.config_path).to eq config_path
       expect(described_class.connection_path).to eq connection_path
-      expect(described_class.env).to eq "test"
+      expect(described_class.env).to eq "some_env"
     end
   end
   

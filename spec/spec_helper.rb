@@ -1,6 +1,11 @@
 require 'pry'
+require 'liebre'
 
 RSpec.configure do |config|
+  
+  config.before :each do
+    Liebre::Config.env = "test"
+  end
 
   config.expect_with :rspec do |expectations|
     # Best error messages on chained expectations

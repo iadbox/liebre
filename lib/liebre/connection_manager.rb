@@ -4,8 +4,6 @@ require "bunny"
 module Liebre
   class ConnectionManager
 
-    CONFIG_PATH = File.expand_path("config/rabbitmq.yml")
-
     def initialize path = Liebre::Config.connection_path
       @path = path
     end
