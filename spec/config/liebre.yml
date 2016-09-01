@@ -11,7 +11,7 @@ consumers:
       opts:
         durable: true
     queue:
-      name: "queue_name"
+      name: "consumer_queue"
       opts:
         durable: true
         
@@ -25,7 +25,7 @@ consumers:
       opts:
         durable: true
     queue:
-      name: "queue_name"
+      name: "rpc_queue"
       opts:
         durable: true
   

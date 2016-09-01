@@ -52,7 +52,7 @@ RSpec.describe "Integration" do
       puts "starting"
       server.start
       puts "sleeping"
-    end
+    end.join
     5.times do
       puts main_thread.status
       sleep 0.1

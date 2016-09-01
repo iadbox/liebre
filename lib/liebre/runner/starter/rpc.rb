@@ -22,7 +22,7 @@ module Liebre
         end
         
         def parse_config
-          config.dup
+          config
         end
         
       end

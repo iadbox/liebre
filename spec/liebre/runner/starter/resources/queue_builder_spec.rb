@@ -1,6 +1,8 @@
+require 'spec_helper'
+
 RSpec.describe Liebre::Runner::Starter::Resources::QueueBuilder do
 
-  let(:chan) { double 'chan' }
+  let(:channel) { double 'channel' }
 
   let :config do
     {
@@ -17,25 +19,26 @@ RSpec.describe Liebre::Runner::Starter::Resources::QueueBuilder do
     }
   end
 
-  subject { described_class.new(chan, config) }
+  subject { described_class.new(channel, config) }
 
   describe '#call' do
     let(:exchange) { double 'exchange' }
     let(:queue)    { double 'queue' }
 
     it 'builds and binds the queue properly' do
-      expect(chan).to receive(:exchange).
+      expect(channel).to receive(:exchange).
         with("my_exchange", :type => "direct", :an => "option").
         and_return(exchange)
 
-      expect(chan).to receive(:queue).
+      expect(channel).to receive(:queue).
         with("my_queue", :some => "option").
         and_return(queue)
 
       expect(queue).to receive(:bind).
-        with(exchange, :routing_key => "foo")
+        with(exchange, :routing_key => "foo").
+        and_return(queue)
 
-      expect(subject.call).to eq queue
+      expect(subject.queue).to eq queue
     end
   end
 

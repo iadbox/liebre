@@ -42,6 +42,10 @@ module Liebre
         def handler
           @handler ||= Handler.new(channel)
         end
+        
+        def channel
+          resources.channel
+        end
 
         def exchange
           resources.exchange
@@ -56,18 +60,22 @@ module Liebre
         end
         
         def parse_config
-          result = config.dup
+          result = clone_hash config
           result['queue']['opts']['arguments'] ||= {}
           result['queue']['opts']['arguments']['x-dead-letter-exchange'] = result['exchange']['name'] + "-error"
           result
         end
         
         def error_config
-          result = config.dup
+          result = clone_hash config
           result['exchange']['name'] += "-error"
           result['queue']['name'] += "-error"
           result['queue']['opts']['exclusive'] = true
           result
+        end
+        
+        def clone_hash hash
+          Marshal.load(Marshal.dump(hash))
         end
 
         attr_reader :connection, :config
