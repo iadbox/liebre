@@ -12,16 +12,16 @@ module Liebre
     end
     
     def enqueue_and_wait message, options = {}
+      result = nil
       with_connection do
         begin
           correlation_id = options[:correlation_id] ||= generate_uuid
-          reply_queue = queue_for(correlation_id)
+          reply_queue = reply_queue correlation_id
           options[:reply_to] = reply_queue.name
           exchange.publish message, options
-          result = nil
           Timeout::timeout(Liebre.config.rpc_request_timeout) do
-            reply_queue.subscribe(:block => true) do |delivery_info, properties, payload|
-              if properties[:correlation_id] == correlation_id
+            reply_queue.subscribe(:block => true) do |delivery_info, meta, payload|
+              if meta[:correlation_id] == correlation_id
                 result = payload
                 channel.consumers[delivery_info.consumer_tag].cancel
               end
@@ -31,9 +31,9 @@ module Liebre
           #do nothing
         ensure
           reply_queue.delete
-          return result
         end
       end
+      result
     end
     
     alias_method :rpc, :enqueue_and_wait
@@ -41,12 +41,13 @@ module Liebre
     private
     
     def with_connection
-      conn_manager.start
-      yield 
-      conn_manager.stop      
+      connection_manager.start
+      yield
+      connection_manager.stop
+      @channel = nil
     end
     
-    def queue_for correlation_id
+    def reply_queue correlation_id
       queue_name = "#{publisher_name}_callback_#{correlation_id}"
       channel.queue queue_name, :exclusive => true
     end
@@ -56,7 +57,7 @@ module Liebre
     end
     
     def channel
-      @channel ||= conn_manager.get.create_channel
+      @channel ||= connection_manager.get.create_channel
     end
     
     def publishers
@@ -71,8 +72,8 @@ module Liebre
       publishers.fetch publisher_name
     end
 
-    def conn_manager
-      @conn_manager ||= ConnectionManager.new
+    def connection_manager
+      @connection_manager ||= ConnectionManager.new
     end
     
     def generate_uuid

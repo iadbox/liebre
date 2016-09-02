@@ -25,7 +25,7 @@ module Liebre
               handler.respond response, info
             rescue => e
               logger.error e.inspect
-              logger.error e.backtrace.first(5).join("\n")
+              logger.error e.backtrace.join("\n")
               handler.respond :error, info
             end
           end
@@ -70,8 +70,12 @@ module Liebre
           result = clone_hash config
           result['exchange']['name'] += "-error"
           result['queue']['name'] += "-error"
-          result['queue']['opts']['exclusive'] = true
+          result['queue']['opts']['durable'] = true
           result
+        end
+        
+        def logger
+          Liebre::Config.logger
         end
         
         def clone_hash hash

@@ -1,4 +1,4 @@
-rpc_request_timeout: 10
+rpc_request_timeout: 30
 
 consumers:
   some_consumer:
@@ -9,11 +9,11 @@ consumers:
       name: "consumer_exchange"
       type: "fanout"
       opts:
-        durable: true
+        durable: false
     queue:
       name: "consumer_queue"
       opts:
-        durable: true
+        durable: false
         
   some_rpc:
     class_name: MyRPC
@@ -21,18 +21,24 @@ consumers:
     pool_size: 1
     exchange:
       name: "rpc_exchange"
-      type: "direct"
+      type: "fanout"
       opts:
-        durable: true
+        durable: false
     queue:
       name: "rpc_queue"
       opts:
-        durable: true
+        durable: false
   
 publishers:
   some_publisher:
     exchange:
-      name: "exchange_name"
-      type: "direct"
+      name: "consumer_exchange"
+      type: "fanout"
       opts:
-        durable: true
+        durable: false
+  rpc_publisher:
+    exchange:
+      name: "rpc_exchange"
+      type: "fanout"
+      opts:
+        durable: false

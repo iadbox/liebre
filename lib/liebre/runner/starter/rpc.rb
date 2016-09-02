@@ -20,6 +20,10 @@ module Liebre
 
           lambda { |response| exchange.publish(response, opts) }
         end
+
+        def exchange
+          channel.default_exchange
+        end
         
         def parse_config
           config

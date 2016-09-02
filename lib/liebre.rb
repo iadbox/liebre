@@ -5,6 +5,7 @@ module Liebre
   autoload :Common,            'liebre/common'
   autoload :Config,            'liebre/config'
   autoload :ConnectionManager, 'liebre/connection_manager'
+  autoload :Publisher,         'liebre/publisher'
   autoload :Runner,            'liebre/runner'
   
   def self.config
