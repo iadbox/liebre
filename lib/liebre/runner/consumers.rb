@@ -4,8 +4,8 @@ module Liebre
   class Runner
     class Consumers
 
-      def initialize connection
-        @connection = connection
+      def initialize connection_manager
+        @connection_manager = connection_manager
       end
     
       def consumer_names
@@ -19,7 +19,7 @@ module Liebre
       def start name
         params = consumers.fetch(name)
 
-        starter = Starter.new(connection, params)
+        starter = Starter.new(connection_manager, params)
         starter.call
       end
 
@@ -29,7 +29,7 @@ module Liebre
         Liebre.config.consumers
       end
 
-      attr_reader :connection
+      attr_reader :connection_manager
 
     end
   end

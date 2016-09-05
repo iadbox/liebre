@@ -4,7 +4,7 @@ RSpec.describe "Integration" do
   
   class MyConsumer
     
-    def initialize payload, meta, options = {}
+    def initialize payload, meta
       @payload = payload
       @meta = meta
     end

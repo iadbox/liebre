@@ -31,8 +31,7 @@ RSpec.describe Liebre::Publisher do
     allow_any_instance_of(Liebre::Config).to receive(:rpc_request_timeout).and_return 10
     
     expect(Liebre::ConnectionManager).to receive(:new).and_return connection_manager
-    expect(connection_manager).to receive(:start)
-    expect(connection_manager).to receive(:stop)
+    expect(connection_manager).to receive(:ensure_started)
     
     expect(Liebre::Common::Utils).to receive(:create_exchange).
       with(channel, exchange_config).and_return exchange

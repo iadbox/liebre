@@ -70,7 +70,7 @@ module Liebre
           result = clone_hash config
           result['exchange']['name'] += "-error"
           result['queue']['name'] += "-error"
-          result['queue']['opts']['durable'] = true
+          result['queue']['opts']['exclusive'] = true
           result
         end
         

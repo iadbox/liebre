@@ -35,14 +35,14 @@ module Liebre
     end
 
     def start_consumers
-      consumers = Consumers.new(conn_manager.get)
+      consumers = Consumers.new(conn_manager)
       consumers.start_all
     end
 
     def log_and_wait e
       logger.warn(e)
       sleep(retry_interval)
-      logger.warn("Retrying connection: #{conn_manager.get}")
+      logger.warn("Retrying connection")
     end
 
     def logger

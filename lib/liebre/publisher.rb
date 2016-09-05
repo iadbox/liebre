@@ -41,10 +41,8 @@ module Liebre
     private
     
     def with_connection
-      connection_manager.start
+      connection_manager.ensure_started
       yield
-      connection_manager.stop
-      @channel = nil
     end
     
     def reply_queue correlation_id
@@ -57,7 +55,7 @@ module Liebre
     end
     
     def channel
-      @channel ||= connection_manager.get.create_channel
+      @channel ||= connection_manager.get(connection_name).create_channel
     end
     
     def publishers
@@ -70,6 +68,10 @@ module Liebre
     
     def config
       publishers.fetch publisher_name
+    end
+      
+    def connection_name
+      config.fetch('connection_name', 'default').to_sym
     end
 
     def connection_manager

@@ -4,7 +4,7 @@ module Liebre
       def self.create_exchange channel, config
         exchange_name = config.fetch "name"
         
-        type = config.fetch("type", :fanout)
+        type = config.fetch("type")
         opts = config.fetch("opts", {})
         exchange_opts = symbolize_keys(opts.merge("type" => type))
         

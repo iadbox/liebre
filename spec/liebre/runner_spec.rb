@@ -8,8 +8,7 @@ RSpec.describe Liebre::Runner do
   subject { described_class.new(interval) }
   let(:logger) { double 'logger' }
 
-  let(:conn)         { double 'conn' }
-  let(:conn_manager) { double 'conn_manager', :get => conn }
+  let(:conn_manager) { double 'conn_manager'}
 
   let(:consumers) { double 'consumers' }
 
@@ -22,7 +21,7 @@ RSpec.describe Liebre::Runner do
       and_return(conn_manager)
 
     allow(described_class::Consumers).to receive(:new).
-      with(conn).and_return(consumers)
+      with(conn_manager).and_return(consumers)
   end
 
   describe '#run' do

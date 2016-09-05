@@ -18,6 +18,7 @@ consumers:
   some_rpc:
     class_name: MyRPC
     rpc: true
+    connection_name: rpc
     pool_size: 1
     exchange:
       name: "rpc_exchange"
@@ -37,6 +38,7 @@ publishers:
       opts:
         durable: false
   rpc_publisher:
+    connection_name: rpc
     exchange:
       name: "rpc_exchange"
       type: "fanout"

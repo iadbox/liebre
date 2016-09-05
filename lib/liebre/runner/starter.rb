@@ -6,8 +6,8 @@ module Liebre
       autoload :Resources, 'liebre/runner/starter/resources'
       autoload :RPC,       'liebre/runner/starter/rpc'
 
-      def initialize connection, config
-        @connection = connection
+      def initialize connection_manager, config
+        @connection_manager = connection_manager
         @config = config
       end
 
@@ -24,8 +24,16 @@ module Liebre
       def is_rpc?
         config.fetch("rpc", false)
       end
+      
+      def connection
+        connection_manager.get connection_name
+      end
+      
+      def connection_name
+        config.fetch('connection_name', 'default').to_sym
+      end
 
-      attr_reader :connection, :config
+      attr_reader :connection_manager, :config
 
     end
   end

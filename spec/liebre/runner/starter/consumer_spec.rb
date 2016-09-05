@@ -16,31 +16,62 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
         "name" => "test_exchange",
         "type" => "direct",
         "opts" => {
-          "durable" => false
+          "durable" => true
         }
       },
       "queue" => {
         "name" => "test_queue",
         "opts" => {
-          "durable" => false
+          "durable" => true
         }        
       }
     }
   end
-  
-  let(:error_config) do
-    result = config.dup
-    result["exchange"]["name"] += "-error"
-    result["queue"]["name"] += "-error"
-    result['queue']['opts']['exclusive'] = true
-    result
+
+  let :error_config do
+    {
+      "class_name" => class_name,
+      "pool_size"  => pool_size,
+      "rpc" => false,
+      "exchange" => {
+        "name" => "test_exchange-error",
+        "type" => "direct",
+        "opts" => {
+          "durable" => true
+        }
+      },
+      "queue" => {
+        "name" => "test_queue-error",
+        "opts" => {
+          "durable" => true,
+          "exclusive" => true
+        }        
+      }
+    }
   end
-  
-  let(:parsed_config) do
-    result = config.dup
-    result['queue']['opts']['arguments'] ||= {}
-    result['queue']['opts']['arguments']['x-dead-letter-exchange'] = result['exchange']['name'] + "-error"
-    result
+
+  let :parsed_config do
+    {
+      "class_name" => class_name,
+      "pool_size"  => pool_size,
+      "rpc" => false,
+      "exchange" => {
+        "name" => "test_exchange",
+        "type" => "direct",
+        "opts" => {
+          "durable" => true
+        }
+      },
+      "queue" => {
+        "name" => "test_queue",
+        "opts" => {
+          "durable" => true,
+          "arguments" => {
+            'x-dead-letter-exchange' => "test_exchange-error"
+          }
+        }        
+      }
+    }
   end
 
   let(:exchange)    { double 'exchange' }
@@ -74,10 +105,10 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
   let(:ack) { :ack }
 
   before do
-    allow(Liebre::Runner::Starter::Resources).to receive(:new).
+    expect(Liebre::Runner::Starter::Resources).to receive(:new).
       with(connection, error_config).and_return(error_resources)
     
-    allow(Liebre::Runner::Starter::Resources).to receive(:new).
+    expect(Liebre::Runner::Starter::Resources).to receive(:new).
       with(connection, parsed_config).and_return(resources)
 
     stub_const(class_name, consumer_class)

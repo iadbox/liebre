@@ -1,4 +1,5 @@
 require "liebre/version"
+require "bunny"
 
 module Liebre
   

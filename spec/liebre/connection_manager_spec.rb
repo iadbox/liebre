@@ -13,7 +13,7 @@ RSpec.describe Liebre::ConnectionManager do
     it do
       subject.start
       
-      bunny = subject.get
+      bunny = subject.get :default
       
       expect(bunny.connected?).to be true
       
@@ -30,7 +30,7 @@ RSpec.describe Liebre::ConnectionManager do
       
       subject.restart
       
-      bunny = subject.get
+      bunny = subject.get :rpc
       
       expect(bunny.connected?).to be true
       

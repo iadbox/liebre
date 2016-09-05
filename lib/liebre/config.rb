@@ -1,5 +1,4 @@
 require "yaml"
-require "bunny"
 
 module Liebre
   class Config
