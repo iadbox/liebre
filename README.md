@@ -164,8 +164,7 @@ Liebre::Config.logger = Logger.new(...)
 
 ## Usage
 
-There are 2 different consumer usages: `Consumer` and `RPC`
-There are 2 ways to publish a message: `enqueue` and `enqueue_and_wait`
+There are 2 different consumer usages: `Consumer` and `RPC`.
 
 ### Consumer
 
@@ -215,6 +214,8 @@ end
 
 Every time a message is received, a new instance of this class will be created.
 
+There are 2 ways to publish a message: `enqueue` and `enqueue_and_wait`.
+
 ### `enqueue`
 
 ```
@@ -235,4 +236,29 @@ response = publisher.enqueue_and_wait "hello", :routing_key => "consumer_queue"
 
 another_response = publisher.rpc "bye", :routing_key => "consumer_queue"
 
+```
+
+### Installation and Execution
+
+Add the following to your Gemfile:
+```
+gem "liebre", ">~ 0.1"
+```
+
+In your Raketask add:
+
+```
+require "liebre/tasks"
+```
+
+Then you just need to run:
+```
+rake liebre:run
+```
+
+Alternative way:
+```
+require 'liebre'
+
+Liebre::Runner.start
 ```
