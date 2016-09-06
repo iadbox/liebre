@@ -260,5 +260,5 @@ Alternative way:
 ```
 require 'liebre'
 
-Liebre::Runner.start
+Liebre::Runner.new.start
 ```

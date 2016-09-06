@@ -20,6 +20,7 @@ module Liebre
         def initialize_queue
           queue.subscribe(:manual_ack => true) do |info, meta, payload|
             begin
+              logger.debug "Received message for #{klass.name}: #{payload} - #{meta}"
               consumer = klass.new(payload, meta)
               response = consumer.call
               handler.respond response, info

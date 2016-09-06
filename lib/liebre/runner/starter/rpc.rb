@@ -5,8 +5,14 @@ module Liebre
 
         def call
           queue.subscribe(:manual_ack => false) do |_info, meta, payload|
-            consumer = klass.new(payload, meta, callback(meta))
-            consumer.call
+            begin
+              logger.debug "Received message for #{klass.name}: #{payload} - #{meta}"
+              consumer = klass.new(payload, meta, callback(meta))
+              consumer.call
+            rescue => e
+              logger.error e.inspect
+              logger.error e.backtrace.join("\n")
+            end
           end
         end
         
@@ -18,7 +24,10 @@ module Liebre
             :correlation_id => meta.correlation_id 
           }
 
-          lambda { |response| exchange.publish(response, opts) }
+          lambda do |response| 
+            logger.debug "Responding with #{response}"
+            exchange.publish(response, opts)
+          end
         end
 
         def exchange
