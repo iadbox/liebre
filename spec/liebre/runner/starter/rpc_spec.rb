@@ -42,7 +42,7 @@ RSpec.describe Liebre::Runner::Starter::RPC do
     
   let(:class_name) { "MyConsumer" }
 
-  let(:rpc_class)    { double 'rpc_class' }
+  let(:rpc_class)    { double 'rpc_class', :name => 'rpc_class' }
   let(:rpc_instance) { double 'rpc_instance' }
     
   let(:reply_to)       { "queue_to_reply_to" }

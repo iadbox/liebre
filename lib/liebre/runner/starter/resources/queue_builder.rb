@@ -10,7 +10,11 @@ module Liebre
           end
 
           def queue
-            channel.queue(queue_name, queue_opts).bind(exchange, bind_opts)
+            q = channel.queue(queue_name, queue_opts)
+            routing_keys.each do |key|
+              q.bind(exchange, bind_opts.merge(:routing_key => key))
+            end
+            q
           end
 
           def exchange
@@ -34,9 +38,15 @@ module Liebre
           def queue_config
             config.fetch("queue")
           end
+          
+          def routing_keys
+            bind_opts[:routing_key] ||= queue_name
+            bind_opts[:routing_key] = [*bind_opts[:routing_key]]
+            bind_opts.delete :routing_key
+          end
 
           def bind_opts
-            Liebre::Common::Utils.symbolize_keys config.fetch("bind", {})
+            @bind_opts ||= Liebre::Common::Utils.symbolize_keys config.fetch("bind", {})
           end
 
           attr_reader :channel, :config

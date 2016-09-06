@@ -86,7 +86,9 @@ consumers:
       opts:
         durable: false
     bind:
-      routing_key: some_routing_key
+      routing_key: #key a string or an array of strings
+        - key_1
+        - key_2
         
   some_rpc:
     class_name: MyRPC
@@ -134,7 +136,7 @@ An entry for each consumer in your app, consumer options:
   * `name`: the queue name
   * `opts`: options hash to pass to bunny queue function
 * `bind` a hash of options (optional):
-  * `routing_key`: the binding routing key
+  * `routing_key`: the binding routing key, it can be a single string or an array of strings
 
 ### Publishers
 

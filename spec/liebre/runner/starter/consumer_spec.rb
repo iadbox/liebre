@@ -92,7 +92,7 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
     
   let(:class_name) { "MyConsumer" }
 
-  let(:consumer_class)    { double 'consumer_class' }
+  let(:consumer_class)    { double 'consumer_class', :name => 'consumer_class' }
   let(:consumer_instance) { double 'consumer_instance' }
     
   let :meta do

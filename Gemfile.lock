@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    liebre (0.1.0)
-      bunny (>= 2.5.1)
+    liebre (0.1.1)
+      bunny (~> 2.5, >= 2.5.1)
 
 GEM
   remote: https://rubygems.org/
