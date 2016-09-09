@@ -5,6 +5,7 @@ consumers:
     class_name: MyConsumer
     rpc: false
     pool_size: 1
+    num_threads: 3
     exchange:
       name: "consumer_exchange"
       type: "fanout"

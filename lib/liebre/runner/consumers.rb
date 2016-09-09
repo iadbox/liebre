@@ -1,5 +1,3 @@
-require 'yaml'
-
 module Liebre
   class Runner
     class Consumers
@@ -18,12 +16,14 @@ module Liebre
 
       def start name
         params = consumers.fetch(name)
-
-        starter = Starter.new(connection_manager, params)
-        starter.call
+        num_threads = params.fetch("num_threads", 1)
+        num_threads.times do
+          starter = Starter.new(connection_manager, params)
+          starter.call
+        end
       end
 
-    private
+      private
 
       def consumers
         Liebre.config.consumers

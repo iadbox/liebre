@@ -7,6 +7,7 @@ RSpec.describe Liebre::Runner::Consumers do
   let(:first_expected_config)  do 
     {
       "class_name" => "MyConsumer",
+      "num_threads" => 3,
       "rpc" => false
     } 
   end
@@ -42,13 +43,13 @@ RSpec.describe Liebre::Runner::Consumers do
     let(:second_starter) { double 'second_starter' }
 
     it "starts the given consumers" do
-      expect(Liebre::Runner::Starter).to receive(:new).
+      expect(Liebre::Runner::Starter).to receive(:new).exactly(3).times.
         with(conn, first_expected_config).and_return(first_starter)
 
       expect(Liebre::Runner::Starter).to receive(:new).
         with(conn, second_expected_config).and_return(second_starter)
 
-      expect(first_starter ).to receive(:call)
+      expect(first_starter ).to receive(:call).exactly(3).times
       expect(second_starter).to receive(:call)
 
       subject.start_all

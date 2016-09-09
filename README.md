@@ -76,6 +76,7 @@ consumers:
     class_name: MyConsumer
     rpc: false
     pool_size: 1
+    num_threads: 4
     exchange:
       name: "consumer_exchange"
       type: "fanout"
@@ -128,6 +129,7 @@ An entry for each consumer in your app, consumer options:
 * `rpc` is a flag to specify the consumer behaviour (default false)
 * `connection_name`: the name of the connection to use (default `default`)
 * `pool_size` of the connection channel (default 1)
+* `num_threads`: number of consumers of the queue (default 1)
 * `exchange` a hash of options:
   * `name`: the exchange name
   * `type`: the exchange type (fanout, direct or topic)
