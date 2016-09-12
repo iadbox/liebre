@@ -21,7 +21,8 @@ module Liebre
         def callback meta
           opts = {
             :routing_key    => meta.reply_to,
-            :correlation_id => meta.correlation_id 
+            :correlation_id => meta.correlation_id,
+            :headers        => meta.headers
           }
 
           lambda do |response| 
