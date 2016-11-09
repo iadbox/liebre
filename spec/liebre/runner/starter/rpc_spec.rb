@@ -47,14 +47,16 @@ RSpec.describe Liebre::Runner::Starter::RPC do
     
   let(:reply_to)       { "queue_to_reply_to" }
   let(:correlation_id) { 123 }
+  let(:headers)        { {} }
   let :meta do
     double 'meta', 
       :reply_to       => reply_to,
-      :correlation_id => correlation_id
+      :correlation_id => correlation_id,
+      :headers        => headers
   end
   
   let :opts do
-    {:routing_key => reply_to, :correlation_id => correlation_id}
+    {:routing_key => reply_to, :correlation_id => correlation_id, :headers => headers}
   end
   
   let(:handler) { double 'handler' }
