@@ -19,15 +19,18 @@ module Liebre
         
         def initialize_queue
           queue.subscribe(:manual_ack => true) do |info, meta, payload|
+            response = :reject
             begin
-              logger.debug "Received message for #{klass.name}: #{payload} - #{meta}"
+              logger.debug "Liebre: Received message for #{klass.name}: #{payload} - #{meta}"
               consumer = klass.new(payload, meta)
               response = consumer.call
-              handler.respond response, info
             rescue => e
+              response = :error
               logger.error e.inspect
               logger.error e.backtrace.join("\n")
-              handler.respond :error, info
+            ensure
+              logger.debug "Liebre: Responding with #{response}"
+              handler.respond response, info
             end
           end
         end
@@ -71,7 +74,6 @@ module Liebre
           result = clone_hash config
           result['exchange']['name'] += "-error"
           result['queue']['name'] += "-error"
-          result['queue']['opts']['exclusive'] = true
           result
         end
         

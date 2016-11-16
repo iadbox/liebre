@@ -7,6 +7,7 @@ module Liebre
     
     def enqueue message, options = {}
       with_connection do
+        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange}"
         exchange.publish message, options
       end
     end
@@ -14,18 +15,21 @@ module Liebre
     def enqueue_and_wait message, options = {}
       result = nil
       with_connection do
+        correlation_id = options[:correlation_id] ||= generate_uuid
+        reply_queue = reply_queue correlation_id
+        options[:reply_to] = reply_queue.name
+        reply_queue.subscribe(:block => false) do |delivery_info, meta, payload|
+          if meta[:correlation_id] == correlation_id
+            result = payload
+            logger.debug "Liebre: Received response '#{result}'"
+            channel.consumers[delivery_info.consumer_tag].cancel
+          end
+        end
+        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange}"
+        exchange.publish message, options
         begin
-          correlation_id = options[:correlation_id] ||= generate_uuid
-          reply_queue = reply_queue correlation_id
-          options[:reply_to] = reply_queue.name
-          exchange.publish message, options
-          Timeout::timeout(Liebre.config.rpc_request_timeout) do
-            reply_queue.subscribe(:block => true) do |delivery_info, meta, payload|
-              if meta[:correlation_id] == correlation_id
-                result = payload
-                channel.consumers[delivery_info.consumer_tag].cancel
-              end
-            end
+          Timeout.timeout(Liebre.config.rpc_request_timeout) do
+            sleep 0.01 while result.nil?
           end
         rescue Timeout::Error
           #do nothing
@@ -51,7 +55,7 @@ module Liebre
     end
     
     def exchange
-      Liebre::Common::Utils.create_exchange channel, exchange_config
+      @exchange ||= Liebre::Common::Utils.create_exchange channel, exchange_config
     end
     
     def channel
@@ -80,6 +84,10 @@ module Liebre
     
     def generate_uuid
       SecureRandom.uuid
+    end
+        
+    def logger
+      Liebre::Config.logger
     end
     
     attr_reader :publisher_name
