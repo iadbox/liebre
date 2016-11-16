@@ -69,7 +69,7 @@ RSpec.describe Liebre::Publisher do
       expect(exchange).to receive(:publish).with message, 
         {:correlation_id => correlation_id, :reply_to => reply_queue_name}
       
-      expect(reply_queue).to receive(:subscribe).with(:block => true) do |&block|
+      expect(reply_queue).to receive(:subscribe).with(:block => false) do |&block|
         expect(channel).to receive(:consumers).and_return consumers
         expect(consumer).to receive(:cancel)
         

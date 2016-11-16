@@ -6,7 +6,7 @@ module Liebre
         def call
           queue.subscribe(:manual_ack => false) do |_info, meta, payload|
             begin
-              logger.debug "Received message for #{klass.name}: #{payload} - #{meta}"
+              logger.debug "Liebre: Received message for #{klass.name}: #{payload} - #{meta}"
               consumer = klass.new(payload, meta, callback(meta))
               consumer.call
             rescue => e
@@ -26,7 +26,7 @@ module Liebre
           }
 
           lambda do |response| 
-            logger.debug "Responding with #{response}"
+            logger.debug "Liebre: Responding with #{response}"
             exchange.publish(response, opts)
           end
         end

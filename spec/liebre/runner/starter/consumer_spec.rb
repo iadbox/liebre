@@ -43,8 +43,7 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
       "queue" => {
         "name" => "test_queue-error",
         "opts" => {
-          "durable" => true,
-          "exclusive" => true
+          "durable" => true
         }        
       }
     }
