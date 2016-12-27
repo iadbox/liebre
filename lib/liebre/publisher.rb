@@ -34,7 +34,11 @@ module Liebre
         rescue Timeout::Error
           #do nothing
         ensure
-          reply_queue.delete
+          begin
+            reply_queue.delete
+          rescue Timeout::Error
+            logger.error "error while trying to delete RPC exclusive queue"
+          end
         end
       end
       result
