@@ -40,7 +40,6 @@ module Liebre
           end
           
           def routing_keys
-            bind_opts[:routing_key] ||= queue_name
             bind_opts[:routing_key] = [*bind_opts[:routing_key]]
             bind_opts.delete :routing_key
           end
