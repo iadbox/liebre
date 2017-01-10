@@ -7,7 +7,7 @@ module Liebre
     
     def enqueue message, options = {}
       with_connection do
-        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange}"
+        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
       end
     end
@@ -25,7 +25,7 @@ module Liebre
             channel.consumers[delivery_info.consumer_tag].cancel
           end
         end
-        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange}"
+        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
         begin
           Timeout.timeout(Liebre.config.rpc_request_timeout) do
@@ -63,7 +63,7 @@ module Liebre
     end
     
     def channel
-      @channel ||= connection_manager.get(connection_name).create_channel
+      @channel ||= connection_manager.channel_for(connection_name)
     end
     
     def publishers
