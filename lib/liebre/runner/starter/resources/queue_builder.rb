@@ -11,8 +11,12 @@ module Liebre
 
           def queue
             q = channel.queue(queue_name, queue_opts)
-            routing_keys.each do |key|
-              q.bind(exchange, bind_opts.merge(:routing_key => key))
+            if routing_keys.any?
+              routing_keys.each do |key|
+                q.bind(exchange, bind_opts.merge(:routing_key => key))
+              end
+            else
+              q.bind(exchange, bind_opts)
             end
             q
           end
@@ -40,8 +44,10 @@ module Liebre
           end
           
           def routing_keys
-            bind_opts[:routing_key] = [*bind_opts[:routing_key]]
-            bind_opts.delete :routing_key
+            @routing_keys ||= begin
+              bind_opts[:routing_key] = [*bind_opts[:routing_key]]
+              bind_opts.delete :routing_key
+            end
           end
 
           def bind_opts

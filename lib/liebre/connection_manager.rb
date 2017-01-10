@@ -7,6 +7,7 @@ module Liebre
     def initialize path = Liebre::Config.connection_path
       @path = path
       @connections = {}
+      @channels = {}
     end
 
     def start
@@ -30,6 +31,12 @@ module Liebre
 
     def get connection_name
       connections[connection_name.to_sym]
+    end
+    
+    def channel_for connection_name, consumer_pool_size = 1
+      channels[connection_name] ||= begin
+        get(connection_name).create_channel nil, consumer_pool_size
+      end
     end
 
     def stop
@@ -58,7 +65,7 @@ module Liebre
       Liebre.env ? result.fetch(Liebre.env) : result
     end
 
-    attr_reader :path, :connections
+    attr_reader :path, :connections, :channels
 
   end
 end
