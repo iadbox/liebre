@@ -1,32 +1,36 @@
 require 'spec_helper'
 
 RSpec.describe Liebre::Runner do
-
+    
+  let :connection_path do
+    File.expand_path("../../config/rabbitmq.yml" ,__FILE__)
+  end
 
   let(:interval) { 1234 }
 
   subject { described_class.new(interval) }
   let(:logger) { double 'logger' }
 
-  let(:conn_manager) { double 'conn_manager'}
+  let(:connection_manager) { double 'connection_manager'}
 
   let(:consumers) { double 'consumers' }
 
   before do
+    Liebre::Config.connection_path = connection_path
     
     allow(subject).to receive(:logger).
       and_return(logger)
 
-    allow(Liebre::ConnectionManager).to receive(:new).
-      and_return(conn_manager)
+    allow(Liebre::ConnectionManager).to receive(:instance).
+      and_return(connection_manager)
 
     allow(described_class::Consumers).to receive(:new).
-      with(conn_manager).and_return(consumers)
+      with(connection_manager).and_return(consumers)
   end
 
   describe '#run' do
     it 'logs and retries after fail' do
-      expect(conn_manager).to receive(:restart) do
+      expect(connection_manager).to receive(:restart) do
         raise "some error"
       end
 
@@ -38,7 +42,7 @@ RSpec.describe Liebre::Runner do
         expect(message).to match /Retrying/
       end
 
-      expect(conn_manager).to receive(:restart)
+      expect(connection_manager).to receive(:restart)
       expect(consumers   ).to receive(:start_all)
 
       expect(subject).to receive(:sleep)

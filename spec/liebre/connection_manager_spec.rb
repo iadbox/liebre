@@ -5,8 +5,12 @@ RSpec.describe Liebre::ConnectionManager do
   let :connection_path do
     File.expand_path("../../config/rabbitmq.yml" ,__FILE__)
   end
+  
+  before do
+    Liebre::Config.connection_path = connection_path
+  end
 
-  subject { described_class.new connection_path }
+  subject { described_class.instance }
 
   describe '.start and .get' do
 

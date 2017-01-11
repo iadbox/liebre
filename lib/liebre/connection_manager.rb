@@ -1,11 +1,14 @@
 require "yaml"
 require "bunny"
+require "singleton"
 
 module Liebre
   class ConnectionManager
+    
+    include Singleton
 
-    def initialize path = Liebre::Config.connection_path
-      @path = path
+    def initialize
+      @path = Liebre::Config.connection_path
       @connections = {}
       @channels = {}
     end
