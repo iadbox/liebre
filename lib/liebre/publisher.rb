@@ -52,8 +52,8 @@ module Liebre
       connection_manager.ensure_started
       begin
         yield
-      rescue ConnectionClosedError
-        logger.warn("#{self.class.name}: ConnectionClosedError found restarting connection")
+      rescue Bunny::Exception => e
+        logger.warn("#{self.class.name}: #{e.class} found restarting connection - #{e.message}")
         connection_manager.restart
         retry
       end
