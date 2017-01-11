@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    liebre (0.1.6)
+    liebre (0.1.7)
       bunny (~> 2.5, >= 2.5.1)
 
 GEM

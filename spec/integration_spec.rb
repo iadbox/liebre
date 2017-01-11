@@ -48,6 +48,8 @@ RSpec.describe "Integration" do
       server.start
     end
     
+    sleep 0.1
+    
     publisher = Liebre::Publisher.new("some_publisher")
     
     allow(MyConsumer).to receive(:new).with("hello", anything).and_return consumer
