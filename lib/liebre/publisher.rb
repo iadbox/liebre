@@ -83,7 +83,7 @@ module Liebre
     end
 
     def connection_manager
-      @connection_manager ||= ConnectionManager.new
+      @connection_manager ||= ConnectionManager.instance
     end
     
     def generate_uuid

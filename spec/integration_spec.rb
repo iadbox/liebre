@@ -34,6 +34,7 @@ RSpec.describe "Integration" do
   end
   
   before do
+    Liebre::ConnectionManager.instance_variable_set :@singleton__instance__, nil
     Liebre::Config.config_path     = config_path
     Liebre::Config.connection_path = connection_path
   end

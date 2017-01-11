@@ -12,7 +12,7 @@ module Liebre
 
     def start
       setup_shutdown
-      conn_manager.restart
+      connection_manager.restart
       start_consumers
       sleep
     rescue StandardError => e
@@ -29,13 +29,13 @@ module Liebre
     def do_shutdown
       Thread.start do
         logger.info("Liebre: Closing AMQP connection...")
-        conn_manager.stop
+        connection_manager.stop
         logger.info("Liebre: AMQP connection closed")
       end.join
     end
 
     def start_consumers
-      consumers = Consumers.new(conn_manager)
+      consumers = Consumers.new(connection_manager)
       consumers.start_all
     end
 
@@ -49,8 +49,8 @@ module Liebre
       Liebre.logger
     end
 
-    def conn_manager
-      @conn_manager ||= ConnectionManager.new
+    def connection_manager
+      @connection_manager ||= ConnectionManager.instance
     end
 
     attr_reader :retry_interval

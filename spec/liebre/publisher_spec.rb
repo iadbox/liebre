@@ -22,15 +22,15 @@ RSpec.describe Liebre::Publisher do
   end
   
   let(:channel)            { double 'channel' }
-  let(:bunny_connection)   { double 'bunny_conection',    :create_channel => channel }
-  let(:connection_manager) { double 'connection_manager', :get => bunny_connection }
-  let(:exchange)           { double 'exchange' }
+  let(:connection_manager) { double 'connection_manager' }
+  let(:exchange)           { double 'exchange', :name => "exchange" }
   
   before do
     allow_any_instance_of(Liebre::Config).to receive(:publishers).and_return publishers_config
     allow_any_instance_of(Liebre::Config).to receive(:rpc_request_timeout).and_return 10
     
-    expect(Liebre::ConnectionManager).to receive(:new).and_return connection_manager
+    allow(Liebre::ConnectionManager).to receive(:instance).and_return connection_manager
+    expect(connection_manager).to receive(:channel_for).with(:default).and_return channel
     expect(connection_manager).to receive(:ensure_started)
     
     expect(Liebre::Common::Utils).to receive(:create_exchange).
