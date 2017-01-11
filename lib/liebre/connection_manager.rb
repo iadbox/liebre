@@ -15,8 +15,13 @@ module Liebre
 
     def start
       initialize_connections
-      connections.each do |_, bunny|
-        bunny.start
+      connections.each do |connection_name, bunny|
+        begin
+          bunny.start
+        rescue => e
+          $logger.error("#{self.class.name}: Can't connect to #{connection_name} instance")
+          $logger.error(e.message + "\n" + e.backtrace.join("\n"))
+        end
       end
     end
     
