@@ -50,7 +50,13 @@ module Liebre
     
     def with_connection
       connection_manager.ensure_started
-      yield
+      begin
+        yield
+      rescue ConnectionClosedError
+        logger.warn("#{self.class.name}: ConnectionClosedError found restarting connection")
+        connection_manager.restart
+        retry
+      end
     end
     
     def reply_queue correlation_id
