@@ -7,6 +7,7 @@ module Liebre
     
     def enqueue message, options = {}
       with_connection do
+        exchange = exchange_for default_channel
         logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
       end
@@ -14,9 +15,9 @@ module Liebre
     
     def enqueue_and_wait message, options = {}
       result = nil
-      with_connection do
+      with_rpc_channel do |channel|
         correlation_id = options[:correlation_id] ||= generate_uuid
-        reply_queue = reply_queue correlation_id
+        reply_queue = reply_queue channel, correlation_id
         options[:reply_to] = reply_queue.name
         reply_queue.subscribe(:block => false) do |delivery_info, meta, payload|
           if meta[:correlation_id] == correlation_id
@@ -25,6 +26,7 @@ module Liebre
             channel.consumers[delivery_info.consumer_tag].cancel
           end
         end
+        exchange = exchange_for channel
         logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
         begin
@@ -33,12 +35,6 @@ module Liebre
           end
         rescue Timeout::Error
           #do nothing
-        ensure
-          begin
-            reply_queue.delete
-          rescue Timeout::Error
-            logger.error "error while trying to delete RPC exclusive queue"
-          end
         end
       end
       result
@@ -59,17 +55,25 @@ module Liebre
       end
     end
     
-    def reply_queue correlation_id
+    def with_rpc_channel
+      with_connection do
+        channel = connection_manager.get(connection_name).create_channel
+        yield(channel)
+        channel.close
+      end
+    end
+    
+    def default_channel
+      @default_channel ||= connection_manager.channel_for(connection_name)
+    end
+    
+    def reply_queue channel, correlation_id
       queue_name = "#{publisher_name}_callback_#{correlation_id}"
-      channel.queue queue_name, :exclusive => true
+      channel.queue queue_name, :exclusive => true, :auto_delete => true
     end
     
-    def exchange
-      @exchange ||= Liebre::Common::Utils.create_exchange channel, exchange_config
-    end
-    
-    def channel
-      @channel ||= connection_manager.channel_for(connection_name)
+    def exchange_for channel 
+      Liebre::Common::Utils.create_exchange channel, exchange_config
     end
     
     def publishers
