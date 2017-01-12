@@ -33,12 +33,6 @@ module Liebre
           end
         rescue Timeout::Error
           #do nothing
-        ensure
-          begin
-            reply_queue.delete
-          rescue Timeout::Error
-            logger.error "error while trying to delete RPC exclusive queue"
-          end
         end
       end
       result
@@ -61,7 +55,7 @@ module Liebre
     
     def reply_queue correlation_id
       queue_name = "#{publisher_name}_callback_#{correlation_id}"
-      channel.queue queue_name, :exclusive => true
+      channel.queue queue_name, :exclusive => true, :auto_delete => true
     end
     
     def exchange
