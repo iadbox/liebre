@@ -59,7 +59,7 @@ RSpec.describe Liebre::Publisher do
     let(:consumers)        { {"tag" => consumer} }
     
     before do
-      expect(channel).to receive(:queue).with(reply_queue_name, :exclusive => true).
+      expect(channel).to receive(:queue).with(reply_queue_name, :exclusive => true, :auto_delete => true).
         and_return reply_queue
     end
     
@@ -75,8 +75,6 @@ RSpec.describe Liebre::Publisher do
         
         block.call(delivery_info, {:correlation_id => correlation_id}, answer)
       end
-      
-      expect(reply_queue).to receive(:delete)
     
       result = subject.enqueue_and_wait message, :correlation_id => correlation_id
       expect(result).to eq answer
