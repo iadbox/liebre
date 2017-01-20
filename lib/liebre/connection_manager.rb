@@ -4,7 +4,7 @@ require "singleton"
 
 module Liebre
   class ConnectionManager
-    
+
     include Singleton
 
     def initialize
@@ -27,7 +27,7 @@ module Liebre
         end
       end
     end
-    
+
     def ensure_started
       all_open = !@connections.empty? and @connections.all? do |_, bunny|
         bunny.open?
@@ -43,7 +43,7 @@ module Liebre
     def get connection_name
       connections[connection_name.to_sym]
     end
-    
+
     def channel_for connection_name, consumer_pool_size = 1
       @lock.synchronize do
         channels[connection_name] ||= begin
@@ -64,7 +64,7 @@ module Liebre
     end
 
     private
-    
+
     def initialize_connections
       config.each do |name, conf|
         @connections[name.to_sym] = connection_for(conf)

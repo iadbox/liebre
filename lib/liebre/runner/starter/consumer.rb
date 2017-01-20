@@ -2,7 +2,7 @@ module Liebre
   class Runner
     class Starter
       class Consumer
-        
+
         autoload :Handler,   "liebre/runner/starter/consumer/handler"
 
         def initialize connection, config
@@ -14,9 +14,9 @@ module Liebre
           initialize_error_queue
           initialize_queue
         end
-        
+
         private
-        
+
         def initialize_queue
           queue.subscribe(:manual_ack => true) do |info, meta, payload|
             response = :reject
@@ -34,19 +34,19 @@ module Liebre
             end
           end
         end
-        
+
         def initialize_error_queue
           Resources.new(connection, error_config).queue
         end
-        
+
         def klass
           @klass ||= Kernel.const_get config.fetch("class_name")
         end
-        
+
         def handler
           @handler ||= Handler.new(channel)
         end
-        
+
         def channel
           resources.channel
         end
@@ -62,31 +62,31 @@ module Liebre
         def resources
           @resources ||= Resources.new(connection, parse_config)
         end
-        
+
         def parse_config
           result = clone_hash config
           result['queue']['opts']['arguments'] ||= {}
           result['queue']['opts']['arguments']['x-dead-letter-exchange'] = result['exchange']['name'] + "-error"
           result
         end
-        
+
         def error_config
           result = clone_hash config
           result['exchange']['name'] += "-error"
           result['queue']['name'] += "-error"
           result
         end
-        
+
         def logger
           Liebre::Config.logger
         end
-        
+
         def clone_hash hash
           Marshal.load(Marshal.dump(hash))
         end
 
         attr_reader :connection, :config
-        
+
       end
     end
   end
