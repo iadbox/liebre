@@ -18,13 +18,19 @@ module Liebre
         end
 
         def channel
-          @channel ||= connection.create_channel(nil, pool_size)
+          @channel ||= connection.create_channel(nil, pool_size).tap do |channel|
+            channel.prefetch(prefetch_count)
+          end
         end
 
         private
-        
+
         def queue_builder
           @queue_bilder ||= QueueBuilder.new(channel, config)
+        end
+
+        def prefetch_count
+          config.fetch("prefetch_count", 10)
         end
 
         def pool_size

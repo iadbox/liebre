@@ -6,6 +6,7 @@ consumers:
     rpc: false
     pool_size: 1
     num_threads: 3
+    prefetch_count: 5
     exchange:
       name: "consumer_exchange"
       type: "fanout"
@@ -15,7 +16,7 @@ consumers:
       name: "consumer_queue"
       opts:
         durable: false
-        
+
   some_rpc:
     class_name: MyRPC
     rpc: true
@@ -30,7 +31,7 @@ consumers:
       name: "rpc_queue"
       opts:
         durable: false
-  
+
 publishers:
   some_publisher:
     exchange:
