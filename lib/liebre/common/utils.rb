@@ -1,6 +1,15 @@
 module Liebre
   module Common
     module Utils
+      
+      @@mutex = Mutex.new
+      
+      def self.mutex_sync
+        @@mutex.synchronize do
+          yield
+        end
+      end
+      
       def self.create_exchange channel, config
         exchange_name = config.fetch "name"
         
@@ -8,7 +17,7 @@ module Liebre
         opts = config.fetch("opts", {})
         exchange_opts = symbolize_keys(opts.merge("type" => type))
         
-        channel.exchange exchange_name, exchange_opts
+        mutex_sync { channel.exchange exchange_name, exchange_opts }
       end
       
       def self.symbolize_keys hash
