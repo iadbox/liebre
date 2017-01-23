@@ -19,6 +19,8 @@ RSpec.describe Liebre::Runner::Starter::Resources do
     before do
       allow(connection).to receive(:create_channel).
         with(nil, pool_size).and_return(channel)
+      
+      allow(channel).to receive(:prefetch).with(10)
 
       allow(channel).to receive(:default_exchange).
         and_return(exchange)

@@ -11,11 +11,10 @@ module Liebre
       @path = Liebre::Config.connection_path
       @connections = {}
       @channels = {}
-      @lock = Mutex.new
     end
 
     def start
-      @lock.synchronize do
+      Common::Utils.mutex_sync do
         initialize_connections
         connections.each do |connection_name, bunny|
           begin
@@ -45,7 +44,7 @@ module Liebre
     end
 
     def channel_for connection_name, consumer_pool_size = 1
-      @lock.synchronize do
+      Common::Utils.mutex_sync do
         channels[connection_name] ||= begin
           get(connection_name).create_channel nil, consumer_pool_size
         end
@@ -53,7 +52,7 @@ module Liebre
     end
 
     def stop
-      @lock.synchronize do
+      Common::Utils.mutex_sync do
         connections.each do |_, bunny|
           if bunny and bunny.open?
             bunny.close
