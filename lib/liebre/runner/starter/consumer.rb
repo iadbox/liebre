@@ -26,6 +26,7 @@ module Liebre
               response = consumer.call
             rescue => e
               response = :error
+              logger.error "Liebre: Error while processing #{klass.name}: #{payload} - #{meta}"
               logger.error e.inspect
               logger.error e.backtrace.join("\n")
             ensure
