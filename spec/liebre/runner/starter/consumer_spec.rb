@@ -77,6 +77,7 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
   let(:queue)       { double 'queue' }
   let(:error_queue) { double 'error_queue' }
   let(:channel)     { double 'channel' }
+  let(:consumer)    { double 'consumer' }
   let(:payload)     { "the_payload" }
 
   subject { described_class.new(connection, config) }
@@ -120,6 +121,7 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
     
     expect(queue).to receive :subscribe do |&block|
       block.call(deliver_info, meta, payload)
+      consumer
     end
 
     expect(consumer_class).to receive :new do |given_payload, given_meta|
@@ -133,7 +135,11 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
     
     expect(handler).to receive(:respond).with ack, deliver_info
 
-    subject.call
+    subject.start
+    
+    expect(consumer).to receive(:cancel)
+    expect(channel).to receive(:close)
+    subject.stop
   end
     
 end

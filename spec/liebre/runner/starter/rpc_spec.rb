@@ -31,6 +31,7 @@ RSpec.describe Liebre::Runner::Starter::RPC do
   let(:exchange) { double 'exchange' }
   let(:queue)    { double 'queue' }
   let(:channel)  { double 'channel', :default_exchange => exchange }
+  let(:consumer) { double 'consumer' }
   let(:payload)  { "the_payload" }
   let(:response) { "the_response" }
 
@@ -76,6 +77,7 @@ RSpec.describe Liebre::Runner::Starter::RPC do
       
     expect(queue).to receive :subscribe do |&block|
       block.call(deliver_info, meta, payload)
+      consumer
     end
 
     expect(rpc_class).to receive :new do |given_payload, given_meta, callback|
@@ -88,7 +90,11 @@ RSpec.describe Liebre::Runner::Starter::RPC do
 
     expect(rpc_instance).to receive(:call)
 
-    subject.call
+    subject.start
+    
+    expect(consumer).to receive(:cancel)
+    expect(channel).to receive(:close)
+    subject.stop
   end
     
 end

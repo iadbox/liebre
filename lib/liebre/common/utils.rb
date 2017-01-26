@@ -5,7 +5,11 @@ module Liebre
       @@mutex = Mutex.new
       
       def self.mutex_sync
-        @@mutex.synchronize do
+        unless @@mutex.locked?
+          @@mutex.synchronize do
+            yield
+          end
+        else
           yield
         end
       end

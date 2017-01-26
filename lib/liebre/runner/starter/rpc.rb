@@ -3,8 +3,8 @@ module Liebre
     class Starter
       class RPC < Consumer
 
-        def call
-          queue.subscribe(:manual_ack => false) do |_info, meta, payload|
+        def start
+          @consumer = queue.subscribe(:manual_ack => false) do |_info, meta, payload|
             begin
               logger.debug "Liebre: Received message for #{klass.name}: #{payload} - #{meta}"
               consumer = klass.new(payload, meta, callback(meta))
