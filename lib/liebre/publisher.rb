@@ -57,9 +57,12 @@ module Liebre
     
     def with_rpc_channel
       with_connection do
-        channel = connection_manager.get(connection_name).create_channel
-        yield(channel)
-        channel.close
+        Common::Utils.mutex_sync do
+          channel = connection_manager.get(connection_name).create_channel
+          channel.prefetch 1
+          yield(channel)
+          channel.close
+        end
       end
     end
     

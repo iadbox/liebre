@@ -10,25 +10,39 @@ module Liebre
           @config = config
         end
 
-        def call
+        def start
           initialize_error_queue
           initialize_queue
+        end
+        
+        def stop
+          if @consumer
+            @consumer.cancel
+            channel.close
+          end
         end
 
         private
 
         def initialize_queue
-          queue.subscribe(:manual_ack => true) do |info, meta, payload|
+          @consumer = queue.subscribe(:manual_ack => true) do |info, meta, payload|
             response = :reject
             begin
               logger.debug "Liebre: Received message for #{klass.name}: #{payload} - #{meta}"
               consumer = klass.new(payload, meta)
               response = consumer.call
-            rescue => e
+            rescue StandardError => e
               response = :error
               logger.error "Liebre: Error while processing #{klass.name}: #{payload} - #{meta}"
               logger.error e.inspect
               logger.error e.backtrace.join("\n")
+            rescue Exception => e
+              response = :error
+              logger.error "Liebre: Error while processing #{klass.name}: #{payload} - #{meta}"
+              logger.error e.inspect
+              logger.error e.backtrace.join("\n")
+              handler.respond response, info
+              raise e
             ensure
               logger.debug "Liebre: Responding with #{response}"
               handler.respond response, info

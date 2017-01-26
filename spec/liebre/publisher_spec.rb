@@ -65,6 +65,7 @@ RSpec.describe Liebre::Publisher do
     before do
       expect(connection_manager).to receive(:get).with(:default).and_return connection
       expect(connection).to receive(:create_channel).and_return channel
+      expect(channel).to receive(:prefetch).with 1
       expect(channel).to receive(:queue).with(reply_queue_name, :exclusive => true, :auto_delete => true).
         and_return reply_queue
       expect(channel).to receive(:close)

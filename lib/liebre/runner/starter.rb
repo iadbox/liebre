@@ -11,8 +11,12 @@ module Liebre
         @config = config
       end
 
-      def call
-        consumer_class.new(connection, config).call
+      def start
+       @consumer = consumer_class.new(connection, config).start
+      end
+      
+      def stop
+        @consumer.stop
       end
 
       private

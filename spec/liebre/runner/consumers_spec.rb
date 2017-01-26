@@ -49,8 +49,8 @@ RSpec.describe Liebre::Runner::Consumers do
       expect(Liebre::Runner::Starter).to receive(:new).
         with(conn, second_expected_config).and_return(second_starter)
 
-      expect(first_starter ).to receive(:call).exactly(3).times
-      expect(second_starter).to receive(:call)
+      expect(first_starter ).to receive(:start).exactly(3).times
+      expect(second_starter).to receive(:start)
 
       subject.start_all
     end

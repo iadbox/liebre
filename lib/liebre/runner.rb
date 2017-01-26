@@ -29,13 +29,13 @@ module Liebre
     def do_shutdown
       Thread.start do
         logger.info("Liebre: Closing AMQP connection...")
+        consumers.stop
         connection_manager.stop
         logger.info("Liebre: AMQP connection closed")
       end.join
     end
 
     def start_consumers
-      consumers = Consumers.new(connection_manager)
       consumers.start_all
     end
 
@@ -47,6 +47,10 @@ module Liebre
 
     def logger
       Liebre.logger
+    end
+    
+    def consumers
+      @consumers ||= Consumers.new(connection_manager)
     end
 
     def connection_manager
