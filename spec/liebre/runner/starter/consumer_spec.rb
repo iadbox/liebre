@@ -74,7 +74,7 @@ RSpec.describe Liebre::Runner::Starter::Consumer do
   end
 
   let(:exchange)    { double 'exchange' }
-  let(:queue)       { double 'queue' }
+  let(:queue)       { double 'queue', :name => "queue" }
   let(:error_queue) { double 'error_queue' }
   let(:channel)     { double 'channel' }
   let(:consumer)    { double 'consumer' }

@@ -8,7 +8,7 @@ module Liebre
     def enqueue message, options = {}
       with_connection do
         exchange = exchange_for default_channel
-        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
+        logger.debug "Liebre# Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
       end
     end
@@ -22,12 +22,12 @@ module Liebre
         reply_queue.subscribe(:block => false) do |delivery_info, meta, payload|
           if meta[:correlation_id] == correlation_id
             result = payload
-            logger.debug "Liebre: Received response '#{result}'"
+            logger.debug "Liebre# Received response '#{result}'"
             channel.consumers[delivery_info.consumer_tag].cancel
           end
         end
         exchange = exchange_for channel
-        logger.debug "Liebre: Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
+        logger.debug "Liebre# Publishing '#{message}' with '#{options}' to exchange: #{exchange.name}"
         exchange.publish message, options
         begin
           Timeout.timeout(Liebre.config.rpc_request_timeout) do

@@ -29,7 +29,7 @@ RSpec.describe Liebre::Runner::Starter::RPC do
   end
 
   let(:exchange) { double 'exchange' }
-  let(:queue)    { double 'queue' }
+  let(:queue)    { double 'queue', :name => "queue" }
   let(:channel)  { double 'channel', :default_exchange => exchange }
   let(:consumer) { double 'consumer' }
   let(:payload)  { "the_payload" }

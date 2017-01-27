@@ -27,27 +27,42 @@ module Liebre
         def initialize_queue
           @consumer = queue.subscribe(:manual_ack => true) do |info, meta, payload|
             response = :reject
+            debug_string = ""
+            elapsed_time = nil
             begin
-              logger.debug "Liebre: Received message for #{klass.name}: #{payload} - #{meta}"
+              debug_string = "Liebre# Received message for #{klass.name}(#{queue.name}): #{payload} - #{meta}"
+              start_at = Time.now
               consumer = klass.new(payload, meta)
               response = consumer.call
+              elapsed_time = (Time.now - start_at).to_f * 1000
             rescue StandardError => e
               response = :error
-              logger.error "Liebre: Error while processing #{klass.name}: #{payload} - #{meta}"
-              logger.error e.inspect
-              logger.error e.backtrace.join("\n")
+              logger.error error_string(payload, meta)
             rescue Exception => e
               response = :error
-              logger.error "Liebre: Error while processing #{klass.name}: #{payload} - #{meta}"
-              logger.error e.inspect
-              logger.error e.backtrace.join("\n")
+              logger.error error_string(payload, meta)
               handler.respond response, info
               raise e
             ensure
-              logger.debug "Liebre: Responding with #{response}"
+              debug_string += "\nLiebre# Responding with #{response}"
+              log_result debug_string, elapsed_time
               handler.respond response, info
             end
           end
+        end
+        
+        def log_result debug_string, elapsed_time
+          time_string = "\nLiebre# Elapsed time #{elapsed_time} ms"
+          if logger.debug?
+            logger.debug debug_string + time_string
+          else
+            logger.info "Liebre# Received message for #{klass.name}(#{queue.name})" + time_string
+          end
+        end
+        
+        def error_string payload, meta
+          "Liebre# Error while processing #{klass.name}(#{queue.name}): #{payload} - #{meta}" + 
+            e.inspect + e.backtrace.join("\n")
         end
 
         def initialize_error_queue
