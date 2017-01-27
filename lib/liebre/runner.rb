@@ -28,10 +28,10 @@ module Liebre
 
     def do_shutdown
       Thread.start do
-        logger.info("Liebre: Closing AMQP connection...")
+        logger.info("Liebre# Closing AMQP connection...")
         consumers.stop
         connection_manager.stop
-        logger.info("Liebre: AMQP connection closed")
+        logger.info("Liebre# AMQP connection closed")
       end.join
     end
 
@@ -42,7 +42,7 @@ module Liebre
     def log_and_wait e
       logger.warn(e)
       sleep(retry_interval)
-      logger.warn("Liebre: Retrying connection")
+      logger.warn("Liebre# Retrying connection")
     end
 
     def logger
