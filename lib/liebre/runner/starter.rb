@@ -16,7 +16,7 @@ module Liebre
       end
       
       def stop
-        @consumer.stop
+        @consumer.cancel
       end
 
       private
