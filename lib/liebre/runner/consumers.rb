@@ -17,7 +17,7 @@ module Liebre
         end
       end
       
-      def stop_all
+      def stop
         threads.each do |starter| 
           starter.stop
         end
