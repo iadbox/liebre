@@ -37,10 +37,10 @@ module Liebre
               elapsed_time = (Time.now - start_at).to_f * 1000
             rescue StandardError => e
               response = :error
-              logger.error error_string(payload, meta)
+              logger.error error_string(e, payload, meta)
             rescue Exception => e
               response = :error
-              logger.error error_string(payload, meta)
+              logger.error error_string(e, payload, meta)
               handler.respond response, info
               raise e
             ensure
@@ -60,9 +60,9 @@ module Liebre
           end
         end
         
-        def error_string payload, meta
+        def error_string error, payload, meta
           "Liebre# Error while processing #{klass.name}(#{queue.name}): #{payload} - #{meta}" + 
-            e.inspect + e.backtrace.join("\n")
+            error.inspect + error.backtrace.join("\n")
         end
 
         def initialize_error_queue
