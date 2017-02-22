@@ -21,6 +21,13 @@ module Liebre
             channel.close
           end
         end
+        
+        protected
+        
+        def call_consumer payload, meta
+          consumer = klass.new(payload, meta)
+          consumer.call
+        end
 
         private
 
@@ -32,8 +39,7 @@ module Liebre
             begin
               debug_string = "Liebre# Received message for #{klass.name}(#{queue.name}): #{payload} - #{meta}"
               start_at = Time.now
-              consumer = klass.new(payload, meta)
-              response = consumer.call
+              response = call_consumer(payload, meta)
               elapsed_time = (Time.now - start_at).to_f * 1000
             rescue StandardError => e
               response = :error
@@ -62,7 +68,7 @@ module Liebre
         
         def error_string error, payload, meta
           "Liebre# Error while processing #{klass.name}(#{queue.name}): #{payload} - #{meta}" + 
-            error.inspect + error.backtrace.join("\n")
+            "\n" + error.inspect + "\n" + error.backtrace.join("\n")
         end
 
         def initialize_error_queue

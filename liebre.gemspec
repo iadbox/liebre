@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.name          = "liebre"
   spec.version       = Liebre::VERSION
   spec.authors       = ["jcabotc", "graimon"]
-  spec.email         = ["jcabot@gmail.com"]
+  spec.email         = ["jcabot@gmail.com", "graimon@gmail.com"]
   spec.summary       = %q{A gem to consume and publish to RabbitMQ based on Bunny, creates a thread for every consumer}
-  spec.homepage      = "https://github.com/qustodian/liebre"
+  spec.homepage      = "https://github.com/iadbox/liebre"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
