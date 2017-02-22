@@ -20,10 +20,11 @@ module Liebre
       retry
     end
 
-  private
+    private
 
     def setup_shutdown
       Signal.trap("TERM") { do_shutdown; exit }
+      Signal.trap("USR1") { do_shutdown; exit }
     end
 
     def do_shutdown
@@ -36,6 +37,7 @@ module Liebre
     end
 
     def start_consumers
+      logger.info("Liebre# Starting consumers...")
       consumers.start_all
     end
 
