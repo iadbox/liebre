@@ -8,8 +8,7 @@ module Liebre
             begin
               debug_string = "Liebre# Received message for #{klass.name}(#{queue.name}): #{payload} - #{meta}"
               start_at = Time.now
-              consumer = klass.new(payload, meta, callback(meta))
-              consumer.call
+              call_consumer payload, meta
               elapsed_time = (Time.now - start_at).to_f * 1000
               log_result debug_string, elapsed_time
             rescue StandardError => e
@@ -22,6 +21,13 @@ module Liebre
               raise e
             end
           end
+        end
+        
+        protected
+        
+        def call_consumer payload, meta
+          consumer = klass.new(payload, meta, callback(meta))
+          consumer.call
         end
         
         private
