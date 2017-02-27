@@ -54,7 +54,6 @@ module Liebre
       handler = handler_class.new(payload, properties, callback)
       handler.call
     rescue => e
-      binding.pry
       callback.reject()
     end
 

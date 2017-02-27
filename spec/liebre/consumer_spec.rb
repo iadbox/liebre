@@ -23,9 +23,10 @@ RSpec.describe Liebre::Consumer do
 
       def call
         case @payload
-          when "do ack"    then @callback.ack()
-          when "do nack"   then @callback.nack()
-          when "do reject" then @callback.reject(:requeue => true)
+          when "do_ack"    then @callback.ack()
+          when "do_nack"   then @callback.nack()
+          when "do_reject" then @callback.reject(:requeue => true)
+          when "fail"      then raise "simulated_crash"
         end
       end
     end
@@ -71,20 +72,31 @@ RSpec.describe Liebre::Consumer do
       expect(pool).to receive :post do |&given_block|
         ack_handler_block = given_block
       end
-      pool_block.call(:info, :properties, "do ack")
+      pool_block.call(:info, :properties, "do_ack")
 
       expect(subject).to receive(:ack).with(:info, {})
       ack_handler_block.()
 
-      # handle message that will ack
+      # handle message that will reject
       #
       reject_handler_block = nil
       expect(pool).to receive :post do |&given_block|
         reject_handler_block = given_block
       end
-      pool_block.call(:info, :properties, "do reject")
+      pool_block.call(:info, :properties, "do_reject")
 
-      expect(subject).to receive(:reject).with(:info, {:requeue => true})
+      expect(subject).to receive(:reject).with(:info, :requeue => true)
+      reject_handler_block.()
+
+      # handle message that will reject because of a failure
+      #
+      reject_handler_block = nil
+      expect(pool).to receive :post do |&given_block|
+        reject_handler_block = given_block
+      end
+      pool_block.call(:info, :properties, "fail")
+
+      expect(subject).to receive(:reject).with(:info, {})
       reject_handler_block.()
     end
   end
