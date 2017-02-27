@@ -24,7 +24,7 @@ module Liebre
     def reject(info, opts = {}) async.__reject__(info, opts); end
 
     def __start__
-      self.current = queue.subscribe(OPTS) do |info, properties, payload|
+      queue.subscribe(OPTS) do |info, properties, payload|
         callback = Callback.new(self, info)
 
         pool.post { handle(payload, properties, callback) }
@@ -44,8 +44,7 @@ module Liebre
     end
 
     def __stop__
-      current.cancel if current
-      self.current = nil
+      queue.unsubscribe
     end
 
   private
@@ -64,7 +63,6 @@ module Liebre
       end
     end
 
-    attr_accessor :current
     attr_reader :chan, :spec, :handler_class, :pool
 
   end
