@@ -72,7 +72,7 @@ RSpec.describe Liebre::Consumer do
       expect(pool).to receive :post do |&given_block|
         ack_handler_block = given_block
       end
-      pool_block.call(:info, :properties, "do_ack")
+      pool_block.call(:info, :meta, "do_ack")
 
       expect(subject).to receive(:ack).with(:info, {})
       ack_handler_block.()
@@ -83,7 +83,7 @@ RSpec.describe Liebre::Consumer do
       expect(pool).to receive :post do |&given_block|
         reject_handler_block = given_block
       end
-      pool_block.call(:info, :properties, "do_reject")
+      pool_block.call(:info, :meta, "do_reject")
 
       expect(subject).to receive(:reject).with(:info, :requeue => true)
       reject_handler_block.()
@@ -94,7 +94,7 @@ RSpec.describe Liebre::Consumer do
       expect(pool).to receive :post do |&given_block|
         reject_handler_block = given_block
       end
-      pool_block.call(:info, :properties, "fail")
+      pool_block.call(:info, :meta, "fail")
 
       expect(subject).to receive(:reject).with(:info, {})
       reject_handler_block.()

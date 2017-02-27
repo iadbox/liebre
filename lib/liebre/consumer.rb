@@ -24,10 +24,10 @@ module Liebre
     def reject(info, opts = {}) async.__reject__(info, opts); end
 
     def __start__
-      queue.subscribe(OPTS) do |info, properties, payload|
+      queue.subscribe(OPTS) do |info, meta, payload|
         callback = Callback.new(self, info)
 
-        pool.post { handle(payload, properties, callback) }
+        pool.post { handle(payload, meta, callback) }
       end
     end
 
@@ -49,10 +49,11 @@ module Liebre
 
   private
 
-    def handle payload, properties, callback
-      handler = handler_class.new(payload, properties, callback)
+    def handle payload, meta, callback
+      handler = handler_class.new(payload, meta, callback)
       handler.call
     rescue => e
+      # TODO: Log error
       callback.reject()
     end
 
