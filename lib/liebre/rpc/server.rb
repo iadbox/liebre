@@ -30,6 +30,7 @@ module Liebre
 
           pool.post { handle(payload, meta, callback) }
         end
+        exchange
       end
 
       def __reply__ meta, response, opts = {}

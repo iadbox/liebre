@@ -48,6 +48,9 @@ RSpec.describe Liebre::Consumer do
   end
 
   describe 'everything' do
+    before do
+      allow(subject).to receive(:async).and_return(subject)
+    end
     it 'starts, stops and acks' do
       # expect queue to bind the exchange
       #

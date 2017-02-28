@@ -33,6 +33,8 @@ module Liebre
         response_queue.subscribe(OPTS) do |_info, meta, payload|
           async.__handle_response__(meta, payload)
         end
+        request_exchange
+
         context.recurrent_task(EXPIRE_INTERVAL) do
           async.__expire__
         end

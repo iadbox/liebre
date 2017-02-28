@@ -13,6 +13,16 @@ module Liebre
       @spec = spec
     end
 
+    def start() __start__(); end
+    def stop()  __stop__(); end
+
+    def __start__
+      exchange
+    end
+
+    def __stop__
+    end
+
     def publish payload, opts = {}
       async.__publish__(payload, opts)
     end
