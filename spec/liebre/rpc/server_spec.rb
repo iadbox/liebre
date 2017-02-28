@@ -16,14 +16,15 @@ RSpec.describe Liebre::RPC::Server do
 
   let :handler_class do
     Class.new do
-      def initialize payload, _meta
-        @payload = payload
+      def initialize payload, _meta, callback
+        @payload  = payload
+        @callback = callback
       end
 
       def call
         case @payload
           when "fail" then raise "simulated_crash"
-          else "response_to(#{@payload})"
+          else @callback.reply("response_to(#{@payload})")
         end
       end
     end
@@ -81,7 +82,7 @@ RSpec.describe Liebre::RPC::Server do
       pool_block.call(:info, meta, "payload")
 
       expect(subject).to receive(:reply).
-        with(meta, "response_to(payload)")
+        with(meta, "response_to(payload)", {})
       reply_handler_block.()
 
       # simulate reply

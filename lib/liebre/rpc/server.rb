@@ -1,8 +1,12 @@
+require 'concurrent'
+
 require 'liebre/rpc/server/context'
+require 'liebre/rpc/server/callback'
 
 module Liebre
   module RPC
     class Server
+      include Concurrent::Async
 
       OPTS = {:block => false, :manual_ack => false}
 
@@ -18,17 +22,19 @@ module Liebre
       def start() async.__start__(); end
       def stop()  async.__stop__();  end
 
-      def reply(meta, response) async.__reply__(meta, response); end
+      def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
 
       def __start__
         queue.subscribe(OPTS) do |info, meta, payload|
-          pool.post { run(payload, meta) }
+          callback = Callback.new(self, meta)
+
+          pool.post { handle(payload, meta, callback) }
         end
       end
 
-      def __reply__ meta, response
-        opts = {:routing_key    => meta.reply_to,
-                :correlation_id => meta.correlation_id}
+      def __reply__ meta, response, opts = {}
+        opts = opts.merge :routing_key    => meta.reply_to,
+                          :correlation_id => meta.correlation_id
 
         exchange.publish(response, opts)
       end
@@ -39,11 +45,9 @@ module Liebre
 
     private
 
-      def run payload, meta
-        handler  = handler_class.new(payload, meta)
-        response = handler.call
-
-        reply(meta, response)
+      def handle payload, meta, callback
+        handler = handler_class.new(payload, meta, callback)
+        handler.call
       rescue => e
         # TODO: Log error
       end

@@ -1,3 +1,5 @@
+require 'concurrent'
+
 require 'liebre/consumer/context'
 require 'liebre/consumer/callback'
 
