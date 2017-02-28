@@ -1,4 +1,4 @@
-RSpec.describe Liebre::Consumer do
+RSpec.describe Liebre::Actor::Consumer do
 
   let(:chan) { double 'chan' }
 

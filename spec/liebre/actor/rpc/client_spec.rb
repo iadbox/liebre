@@ -1,6 +1,6 @@
 require 'concurrent'
 
-RSpec.describe Liebre::RPC::Client do
+RSpec.describe Liebre::Actor::RPC::Client do
 
   let(:chan) { double 'chan' }
 

@@ -1,6 +1,6 @@
 module Liebre
-  module RPC
-    class Server
+  module Actor
+    class Publisher
       class Context
 
         def initialize chan, spec
@@ -9,26 +9,13 @@ module Liebre
         end
 
         def exchange
-          chan.default_exchange
-        end
-
-        def request_queue
-          name = spec.queue_name
-          opts = spec.queue_opts
-
-          chan.queue(name, opts).tap do |queue|
-            queue.bind(request_exchange)
-          end
-        end
-
-      private
-
-        def request_exchange
           name = spec.exchange_name
           opts = spec.exchange_opts
 
           chan.exchange(name, opts)
         end
+
+      private
 
         attr_reader :chan, :spec
 

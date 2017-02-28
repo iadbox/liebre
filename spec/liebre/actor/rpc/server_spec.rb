@@ -1,4 +1,4 @@
-RSpec.describe Liebre::RPC::Server do
+RSpec.describe Liebre::Actor::RPC::Server do
 
   let(:chan) { double 'chan' }
 

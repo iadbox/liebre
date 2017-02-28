@@ -1,4 +1,4 @@
-RSpec.describe Liebre::Publisher do
+RSpec.describe Liebre::Actor::Publisher do
 
   let(:chan) { double 'chan' }
 
