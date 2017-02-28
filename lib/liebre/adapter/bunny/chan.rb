@@ -18,6 +18,10 @@ module Liebre
           Queue.new(channel.queue(name, opts))
         end
 
+        def set_prefetch count
+          channel.basic_qos(count, false)
+        end
+
         def close
           channel.close
         end
