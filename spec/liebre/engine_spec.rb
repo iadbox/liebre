@@ -1,3 +1,5 @@
+require 'concurrent'
+
 RSpec.describe Liebre::Engine do
 
   let :actors do
@@ -69,6 +71,7 @@ RSpec.describe Liebre::Engine do
         expect(chan     ).to eq chan_3
         expect(resources).to eq "third_resources"
         expect(handler  ).to eq handler_class
+        expect(pool     ).to be_a Concurrent::FixedThreadPool
 
         third_consumer
       end
