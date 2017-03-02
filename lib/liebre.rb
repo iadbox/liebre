@@ -1,7 +1,7 @@
 require "liebre/version"
 
 require "liebre/adapter"
-require "liebre/connections"
+require "liebre/bridge"
 require "liebre/actor"
 
 module Liebre
