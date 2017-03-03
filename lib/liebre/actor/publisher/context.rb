@@ -9,13 +9,18 @@ module Liebre
         end
 
         def exchange
-          name = spec.exchange_name
-          opts = spec.exchange_opts
+          name = exchange_config.fetch("name")
+          type = exchange_config.fetch("type")
+          opts = exchange_config.fetch("opts", {})
 
-          chan.exchange(name, opts)
+          chan.exchange(name, type, opts)
         end
 
       private
+
+        def exchange_config
+          spec.fetch("exchange")
+        end
 
         attr_reader :chan, :spec
 

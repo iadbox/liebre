@@ -8,14 +8,19 @@ RSpec.describe Liebre::Actor::RPC::Server do
   let(:queue_opts)    { {:auto_delete => true} }
 
   let :spec do
-    double 'spec', :exchange_name => exchange_name,
-                   :exchange_opts => exchange_opts,
-                   :queue_name    => queue_name,
-                   :queue_opts    => queue_opts
+    {
+      "exchange" => {
+        "name" => "foo",
+        "type" => "fanout",
+        "opts" => {"durable" => true}},
+      "queue" => {
+        "name" => "bar",
+        "opts" => {"durable" => true}}}
   end
 
   let :handler_class do
     Class.new do
+
       def initialize payload, _meta, callback
         @payload  = payload
         @callback = callback
@@ -27,6 +32,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
           else @callback.reply("response_to(#{@payload})")
         end
       end
+
     end
   end
 
@@ -40,10 +46,12 @@ RSpec.describe Liebre::Actor::RPC::Server do
 
   before do
     allow(chan).to receive(:queue).
-      with(queue_name, queue_opts).and_return(request_queue)
+      with("bar", "durable" => true).
+      and_return(request_queue)
 
     allow(chan).to receive(:exchange).
-      with(exchange_name, exchange_opts).and_return(request_exchange)
+      with("foo", "fanout", "durable" => true).
+      and_return(request_exchange)
 
     allow(chan).to receive(:default_exchange).
       and_return(default_exchange)
@@ -79,6 +87,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
       expect(pool).to receive :post do |&given_block|
         reply_handler_block = given_block
       end
+      sleep(0.05)
       pool_block.call(:info, meta, "payload")
 
       expect(subject).to receive(:reply).
@@ -101,6 +110,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
       pool_block.call(:info, meta, "fail")
 
       expect(subject).not_to receive(:reply)
+      sleep(0.2)
       fail_handler_block.()
     end
   end

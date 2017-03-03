@@ -15,8 +15,8 @@ module Liebre
 
           def response_queue
             @response_queue ||= begin
-              name = spec.queue_name
-              opts = spec.queue_opts
+              name = queue_config.fetch("name")
+              opts = queue_config.fetch("opts")
 
               chan.queue(name, opts)
             end
@@ -24,10 +24,11 @@ module Liebre
 
           def request_exchange
             @request_exchange ||= begin
-              name = spec.exchange_name
-              opts = spec.exchange_opts
+              name = exchange_config.fetch("name")
+              type = exchange_config.fetch("type")
+              opts = exchange_config.fetch("opts")
 
-              chan.exchange(name, opts)
+              chan.exchange(name, type, opts)
             end
           end
 
@@ -44,6 +45,14 @@ module Liebre
           end
 
         private
+
+          def exchange_config
+            spec.fetch("exchange")
+          end
+
+          def queue_config
+            spec.fetch("queue")
+          end
 
           attr_reader :chan, :spec, :tasks
 

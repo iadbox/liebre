@@ -3,8 +3,8 @@ module Liebre
 
     RETRY_INTERVAL = 5
 
-    def initialize config: Liebre.config
-      @config = config
+    def initialize engine: Liebre.engine
+      @engine = engine
     end
 
     def run
@@ -19,15 +19,15 @@ module Liebre
   private
 
     def setup_signals
-      Signal.trap("TERM") { engine.stop; exit }
-      Signal.trap("USR1") { engine.stop; exit }
+      Signal.trap("TERM") { do_shutdown; exit }
+      Signal.trap("USR1") { do_shutdown; exit }
     end
 
-    def engine
-      @engine ||= Engine.new(config)
+    def do_stop
+      Thread.new { engine.stop }.join
     end
 
-    attr_reader :config
+    attr_reader :engine
 
   end
 end

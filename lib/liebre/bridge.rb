@@ -1,6 +1,5 @@
 require 'concurrent'
 
-require 'liebre/bridge/connection'
 require 'liebre/bridge/channel_builder'
 
 module Liebre
@@ -27,7 +26,7 @@ module Liebre
 
     def connections
       @connections ||= conn_configs.reduce({}) do |all, (name, opts)|
-        connection = Connection.new(adapter, opts)
+        connection = adapter.connection(opts)
 
         all.merge!(name => connection)
       end

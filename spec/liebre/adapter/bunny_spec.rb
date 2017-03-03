@@ -27,7 +27,7 @@ RSpec.describe Liebre::Adapter::Bunny do
 
       # open an exchange, a queue and bind them
       #
-      exchange = chan.exchange("foo", common_opts.merge(:type => "fanout"))
+      exchange = chan.exchange("foo", "fanout", common_opts)
       queue    = chan.queue("bar", common_opts)
       queue.bind(exchange)
 

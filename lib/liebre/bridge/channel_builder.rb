@@ -10,8 +10,8 @@ module Liebre
       end
 
       def call
-        connection.channel.tap do |channel|
-          channel.basic_qos(prefetch_count)
+        connection.open_channel.tap do |channel|
+          channel.set_prefetch(prefetch_count)
         end
       end
 

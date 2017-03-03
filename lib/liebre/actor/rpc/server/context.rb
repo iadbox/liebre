@@ -14,8 +14,8 @@ module Liebre
           end
 
           def request_queue
-            name = spec.queue_name
-            opts = spec.queue_opts
+            name = queue_config.fetch("name")
+            opts = queue_config.fetch("opts")
 
             chan.queue(name, opts).tap do |queue|
               queue.bind(request_exchange)
@@ -25,10 +25,19 @@ module Liebre
         private
 
           def request_exchange
-            name = spec.exchange_name
-            opts = spec.exchange_opts
+            name = exchange_config.fetch("name")
+            type = exchange_config.fetch("type")
+            opts = exchange_config.fetch("opts")
 
-            chan.exchange(name, opts)
+            chan.exchange(name, type, opts)
+          end
+
+          def queue_config
+            spec.fetch("queue")
+          end
+
+          def exchange_config
+            spec.fetch("exchange")
           end
 
           attr_reader :chan, :spec

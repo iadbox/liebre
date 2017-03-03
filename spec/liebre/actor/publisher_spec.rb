@@ -2,12 +2,12 @@ RSpec.describe Liebre::Actor::Publisher do
 
   let(:chan) { double 'chan' }
 
-  let(:name) { "foo" }
-  let(:opts) { {:durable => false, :auto_delete => true} }
-
   let :spec do
-    double 'spec', :exchange_name => name,
-                   :exchange_opts => opts
+    {
+      "exchange" => {
+        "name" => "foo",
+        "type" => "fanout",
+        "opts" => {"durable" => true}}}
   end
 
   subject { described_class.new(chan, spec) }
@@ -16,7 +16,8 @@ RSpec.describe Liebre::Actor::Publisher do
 
   before do
     allow(chan).to receive(:exchange).
-      with(name, opts).and_return(exchange)
+      with("foo", "fanout", "durable" => true).
+      and_return(exchange)
   end
 
   describe '#__publish__' do

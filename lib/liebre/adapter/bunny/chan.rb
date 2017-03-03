@@ -10,7 +10,9 @@ module Liebre
           @channel = channel
         end
 
-        def exchange name, opts
+        def exchange name, type, opts
+          opts = opts.merge(:type => type)
+
           Exchange.new(channel.exchange(name, opts))
         end
 

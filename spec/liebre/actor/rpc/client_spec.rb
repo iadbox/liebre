@@ -4,16 +4,15 @@ RSpec.describe Liebre::Actor::RPC::Client do
 
   let(:chan) { double 'chan' }
 
-  let(:exchange_name) { "foo" }
-  let(:exchange_opts) { {:durable => false} }
-  let(:queue_name)    { "bar" }
-  let(:queue_opts)    { {:auto_delete => true} }
-
   let :spec do
-    double 'spec', :exchange_name => exchange_name,
-                   :exchange_opts => exchange_opts,
-                   :queue_name    => queue_name,
-                   :queue_opts    => queue_opts
+    {
+      "exchange" => {
+        "name" => "foo",
+        "type" => "fanout",
+        "opts" => {"durable" => true}},
+      "queue" => {
+        "name" => "bar",
+        "opts" => {"durable" => true}}}
   end
 
   subject { described_class.new(chan, spec) }
@@ -23,10 +22,12 @@ RSpec.describe Liebre::Actor::RPC::Client do
 
   before do
     allow(chan).to receive(:queue).
-      with(queue_name, queue_opts).and_return(response_queue)
+      with("bar", "durable" => true).
+      and_return(response_queue)
 
     allow(chan).to receive(:exchange).
-      with(exchange_name, exchange_opts).and_return(request_exchange)
+      with("foo", "fanout", "durable" => true).
+      and_return(request_exchange)
   end
 
   describe '#start and #request' do

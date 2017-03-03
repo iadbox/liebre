@@ -3,8 +3,8 @@ module Liebre
     module Interface
       module Chan
 
-        def exchange name, opts
-          raise NotImplementedError, "All adapters must implement channel exchange(name, opts) to declare and build exchanges"
+        def exchange name, type, opts
+          raise NotImplementedError, "All adapters must implement channel exchange(name, type, opts) to declare and build exchanges"
         end
 
         def queue name, opts

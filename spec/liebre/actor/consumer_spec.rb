@@ -8,14 +8,19 @@ RSpec.describe Liebre::Actor::Consumer do
   let(:queue_opts)    { {:auto_delete => true} }
 
   let :spec do
-    double 'spec', :exchange_name => exchange_name,
-                   :exchange_opts => exchange_opts,
-                   :queue_name    => queue_name,
-                   :queue_opts    => queue_opts
+    {
+      "exchange" => {
+        "name" => "foo",
+        "type" => "fanout",
+        "opts" => {"durable" => true}},
+      "queue" => {
+        "name" => "bar",
+        "opts" => {"durable" => true}}}
   end
 
   let :handler_class do
     Class.new do
+
       def initialize payload, _meta, callback
         @payload  = payload
         @callback = callback
@@ -29,6 +34,7 @@ RSpec.describe Liebre::Actor::Consumer do
           when "fail"      then raise "simulated_crash"
         end
       end
+
     end
   end
 
@@ -41,10 +47,12 @@ RSpec.describe Liebre::Actor::Consumer do
 
   before do
     allow(chan).to receive(:queue).
-      with(queue_name, queue_opts).and_return(queue)
+      with("bar", "durable" => true).
+      and_return(queue)
 
     allow(chan).to receive(:exchange).
-      with(exchange_name, exchange_opts).and_return(exchange)
+      with("foo", "fanout", "durable" => true).
+      and_return(exchange)
   end
 
   describe 'everything' do

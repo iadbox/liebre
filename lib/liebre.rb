@@ -13,6 +13,14 @@ module Liebre
     @config ||= Config.new
   end
 
+  def self.engine
+    @engine ||= Engine.new(config)
+  end
+
+  def self.repo
+    engine.repo
+  end
+
   def self.configure
     yield(config)
   end

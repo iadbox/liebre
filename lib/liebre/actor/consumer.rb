@@ -30,6 +30,8 @@ module Liebre
         queue.subscribe(OPTS) do |info, meta, payload|
           async.__handle_message__(info, meta, payload)
         end
+      rescue
+        binding.pry
       end
 
       def __handle_message__ info, meta, payload

@@ -41,7 +41,7 @@ RSpec.describe Liebre::Bridge do
 
       expect(conn_2).to receive(:open_channel).
         and_return(chan)
-      expect(chan).to receive(:basic_qos).
+      expect(chan).to receive(:set_prefetch).
         with(chan_opts["prefetch_count"])
 
       expect(subject.open_channel(chan_opts)).to eq chan

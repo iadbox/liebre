@@ -27,11 +27,15 @@ module Liebre
 
         def __start__
           queue.subscribe(OPTS) do |info, meta, payload|
-            callback = Callback.new(self, meta)
-
-            pool.post { handle(payload, meta, callback) }
+            async.__handle_request__(meta, payload)
           end
           exchange
+        end
+
+        def __handle_request__ meta, payload
+          callback = Callback.new(self, meta)
+
+          pool.post { handle(payload, meta, callback) }
         end
 
         def __reply__ meta, response, opts = {}
