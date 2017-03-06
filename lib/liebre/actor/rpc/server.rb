@@ -32,10 +32,9 @@ module Liebre
           exchange
         end
 
-        def __handle_request__ meta, payload
-          callback = Callback.new(self, meta)
-
-          pool.post { handle(payload, meta, callback) }
+        def __stop__
+          queue.unsubscribe
+          chan.close
         end
 
         def __reply__ meta, response, opts = {}
@@ -45,8 +44,10 @@ module Liebre
           exchange.publish(response, opts)
         end
 
-        def __stop__
-          queue.unsubscribe
+        def __handle_request__ meta, payload
+          callback = Callback.new(self, meta)
+
+          pool.post { handle(payload, meta, callback) }
         end
 
       private

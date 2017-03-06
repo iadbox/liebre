@@ -1,10 +1,17 @@
 require 'concurrent'
+require 'securerandom'
 
 module Liebre
   module Actor
     module RPC
       class Client
         class Context
+
+          DEFAULT_PREFIX = "rpc_responses"
+
+          QUEUE_OPTS = {:auto_delete => true,
+                        :exclusive   => true,
+                        :durable     => false}
 
           def initialize chan, spec
             @chan = chan
@@ -15,10 +22,10 @@ module Liebre
 
           def response_queue
             @response_queue ||= begin
-              name = queue_config.fetch("name")
-              opts = queue_config.fetch("opts")
+              prefix = queue_config.fetch("prefix", DEFAULT_PREFIX)
+              suffix = SecureRandom.urlsafe_base64
 
-              chan.queue(name, opts)
+              chan.queue("#{prefix}_#{suffix}", QUEUE_OPTS)
             end
           end
 
@@ -28,7 +35,7 @@ module Liebre
               type = exchange_config.fetch("type")
               opts = exchange_config.fetch("opts")
 
-              chan.exchange(name, type, opts)
+              chan.exchange(name, type, symbolize(opts))
             end
           end
 
@@ -51,7 +58,11 @@ module Liebre
           end
 
           def queue_config
-            spec.fetch("queue")
+            spec.fetch("queue", {})
+          end
+
+          def symbolize opts
+            opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
           end
 
           attr_reader :chan, :spec, :tasks

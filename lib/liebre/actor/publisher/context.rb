@@ -13,13 +13,17 @@ module Liebre
           type = exchange_config.fetch("type")
           opts = exchange_config.fetch("opts", {})
 
-          chan.exchange(name, type, opts)
+          chan.exchange(name, type, symbolize(opts))
         end
 
       private
 
         def exchange_config
           spec.fetch("exchange")
+        end
+
+        def symbolize opts
+          opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
         end
 
         attr_reader :chan, :spec

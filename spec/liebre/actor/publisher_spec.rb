@@ -16,7 +16,7 @@ RSpec.describe Liebre::Actor::Publisher do
 
   before do
     allow(chan).to receive(:exchange).
-      with("foo", "fanout", "durable" => true).
+      with("foo", "fanout", :durable => true).
       and_return(exchange)
   end
 

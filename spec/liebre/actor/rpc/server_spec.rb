@@ -46,11 +46,11 @@ RSpec.describe Liebre::Actor::RPC::Server do
 
   before do
     allow(chan).to receive(:queue).
-      with("bar", "durable" => true).
+      with("bar", :durable => true).
       and_return(request_queue)
 
     allow(chan).to receive(:exchange).
-      with("foo", "fanout", "durable" => true).
+      with("foo", "fanout", :durable => true).
       and_return(request_exchange)
 
     allow(chan).to receive(:default_exchange).
@@ -87,11 +87,12 @@ RSpec.describe Liebre::Actor::RPC::Server do
       expect(pool).to receive :post do |&given_block|
         reply_handler_block = given_block
       end
-      sleep(0.05)
       pool_block.call(:info, meta, "payload")
 
       expect(subject).to receive(:reply).
         with(meta, "response_to(payload)", {})
+
+      sleep(0.2)
       reply_handler_block.()
 
       # simulate reply

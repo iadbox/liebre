@@ -69,9 +69,10 @@ RSpec.describe "Publish and consume" do
     end
     expect(handler).to receive(:call)
 
+    sleep(0.1) # wait for the consumer to bind its queue to the exchange
     publisher.publish(payload, :headers => headers)
+
     sleep(0.2) # wait for the message to be published and consumed
-    sleep(1000)
   end
 
 end

@@ -26,6 +26,7 @@ module Liebre
       end
 
       def __stop__
+        chan.close
       end
 
       def __publish__ payload, opts = {}

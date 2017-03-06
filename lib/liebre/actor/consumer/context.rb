@@ -12,7 +12,7 @@ module Liebre
           name = queue_config.fetch("name")
           opts = queue_config.fetch("opts", {})
 
-          chan.queue(name, opts).tap do |queue|
+          chan.queue(name, symbolize(opts)).tap do |queue|
             queue.bind(exchange)
           end
         end
@@ -24,7 +24,7 @@ module Liebre
           type = exchange_config.fetch("type")
           opts = exchange_config.fetch("opts", {})
 
-          chan.exchange(name, type, opts)
+          chan.exchange(name, type, symbolize(opts))
         end
 
         def exchange_config
@@ -33,6 +33,10 @@ module Liebre
 
         def queue_config
           spec.fetch("queue")
+        end
+
+        def symbolize opts
+          opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
         end
 
         attr_reader :chan, :spec

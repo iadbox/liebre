@@ -47,11 +47,11 @@ RSpec.describe Liebre::Actor::Consumer do
 
   before do
     allow(chan).to receive(:queue).
-      with("bar", "durable" => true).
+      with("bar", :durable => true).
       and_return(queue)
 
     allow(chan).to receive(:exchange).
-      with("foo", "fanout", "durable" => true).
+      with("foo", "fanout", :durable => true).
       and_return(exchange)
   end
 

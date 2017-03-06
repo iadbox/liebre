@@ -3,6 +3,10 @@ module Liebre
     module Interface
       module Queue
 
+        def name
+          raise NotImplementedError, "All adapters must implement queue name() to get the name of the queue"
+        end
+
         def bind exchange, opts = {}
           raise NotImplementedError, "All adapters must implement queue bind(exchange, opts) to bind the queue to an exchange"
         end

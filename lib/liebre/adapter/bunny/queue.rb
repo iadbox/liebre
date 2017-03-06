@@ -10,6 +10,10 @@ module Liebre
           @queue = queue
         end
 
+        def name
+          queue.name
+        end
+
         def bind exchange, opts = {}
           bunny_exchange = exchange.exchange
 

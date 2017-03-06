@@ -3,6 +3,10 @@ module Liebre
     module Interface
       module Chan
 
+        def default_exchange
+          raise NotImplementedError, "All adapters must implement channel default_exchange() to build the default exchange"
+        end
+
         def exchange name, type, opts
           raise NotImplementedError, "All adapters must implement channel exchange(name, type, opts) to declare and build exchanges"
         end

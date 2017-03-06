@@ -21,7 +21,7 @@ module Liebre
         end
 
         def start() async.__start__(); end
-        def stop()  async.__stop__(); end
+        def stop()  async.__stop__();  end
 
         def request payload, opts = {}, timeout = TIMEOUT
           call_ivar     = await.__request__(payload, opts, timeout)
@@ -41,6 +41,11 @@ module Liebre
           end
         end
 
+        def __stop__
+          response_queue.unsubscribe
+          chan.close
+        end
+
         def __request__ payload, opts = {}, timeout = TIMEOUT
           pending.add(timeout) do |correlation_id|
             opts = opts.merge :reply_to       => response_queue.name,
@@ -56,10 +61,6 @@ module Liebre
 
         def __expire__
           pending.expire
-        end
-
-        def __stop__
-          response_queue.unsubscribe
         end
 
       private

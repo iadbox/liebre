@@ -30,8 +30,11 @@ module Liebre
         queue.subscribe(OPTS) do |info, meta, payload|
           async.__handle_message__(info, meta, payload)
         end
-      rescue
-        binding.pry
+      end
+
+      def __stop__
+        queue.unsubscribe
+        chan.close
       end
 
       def __handle_message__ info, meta, payload
@@ -50,10 +53,6 @@ module Liebre
 
       def __reject__ info, opts = {}
         queue.reject(info, opts)
-      end
-
-      def __stop__
-        queue.unsubscribe
       end
 
     private
