@@ -9,13 +9,7 @@ module Liebre
         end
 
         def exchange
-          @exchange ||= begin
-            name = exchange_config.fetch("name")
-            type = exchange_config.fetch("type")
-            opts = exchange_config.fetch("opts", {})
-
-            chan.exchange(name, type, symbolize(opts))
-          end
+          @exchange ||= declare.exchange(exchange_config)
         end
 
       private
@@ -24,8 +18,8 @@ module Liebre
           spec.fetch("exchange")
         end
 
-        def symbolize opts
-          opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
+        def declare
+          @declare ||= Shared::Declare.new(chan)
         end
 
         attr_reader :chan, :spec

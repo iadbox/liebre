@@ -9,24 +9,13 @@ module Liebre
         end
 
         def queue
-          @queue ||= begin
-            name = queue_config.fetch("name")
-            opts = queue_config.fetch("opts", {})
-
-            chan.queue(name, symbolize(opts)).tap do |queue|
-              queue.bind(exchange)
-            end
+          @queue ||= declare.queue(queue_config).tap do |queue|
+            declare.bind(queue, exchange, bind_config)
           end
         end
 
         def exchange
-          @exchange ||= begin
-            name = exchange_config.fetch("name")
-            type = exchange_config.fetch("type")
-            opts = exchange_config.fetch("opts", {})
-
-            chan.exchange(name, type, symbolize(opts))
-          end
+          @exchange ||= declare.exchange(exchange_config)
         end
 
       private
@@ -39,8 +28,12 @@ module Liebre
           spec.fetch("queue")
         end
 
-        def symbolize opts
-          opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
+        def bind_config
+          spec.fetch("bind", {})
+        end
+
+        def declare
+          @declare ||= Shared::Declare.new(chan)
         end
 
         attr_reader :chan, :spec

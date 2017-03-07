@@ -7,6 +7,10 @@ module Liebre
           @chan = chan
         end
 
+        def default_exchange
+          chan.default_exchange
+        end
+
         def exchange config
           name = config.fetch("name")
           type = config.fetch("type")

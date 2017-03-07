@@ -15,7 +15,9 @@ RSpec.describe Liebre::Actor::RPC::Server do
         "opts" => {"durable" => true}},
       "queue" => {
         "name" => "bar",
-        "opts" => {"durable" => true}}}
+        "opts" => {"durable" => true}},
+      "bind" => {
+        "routing_key" => "baz"}}
   end
 
   let :handler_class do
@@ -66,7 +68,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
       # expect queue to bind the exchange
       #
       expect(request_queue).to receive(:bind).
-        with(request_exchange)
+        with(request_exchange, :routing_key => "baz")
 
       # expect subscription setup
       #

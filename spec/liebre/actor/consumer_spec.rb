@@ -15,7 +15,10 @@ RSpec.describe Liebre::Actor::Consumer do
         "opts" => {"durable" => true}},
       "queue" => {
         "name" => "bar",
-        "opts" => {"durable" => true}}}
+        "opts" => {"durable" => true}},
+      "bind" => [
+        {"routing_key" => "baz"},
+        {"routing_key" => "qux"}]}
   end
 
   let :handler_class do
@@ -62,7 +65,11 @@ RSpec.describe Liebre::Actor::Consumer do
     it 'starts, stops and acks' do
       # expect queue to bind the exchange
       #
-      expect(queue).to receive(:bind).with(exchange)
+      expect(queue).to receive(:bind).
+        with(exchange, :routing_key => "baz")
+
+      expect(queue).to receive(:bind).
+        with(exchange, :routing_key => "qux")
 
       # expect subscription setup
       #

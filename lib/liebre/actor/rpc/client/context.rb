@@ -25,18 +25,15 @@ module Liebre
               prefix = queue_config.fetch("prefix", DEFAULT_PREFIX)
               suffix = SecureRandom.urlsafe_base64
 
-              chan.queue("#{prefix}_#{suffix}", QUEUE_OPTS)
+              config = {"name" => "#{prefix}_#{suffix}",
+                        "opts" => QUEUE_OPTS}
+
+              declare.queue(config)
             end
           end
 
           def request_exchange
-            @request_exchange ||= begin
-              name = exchange_config.fetch("name")
-              type = exchange_config.fetch("type")
-              opts = exchange_config.fetch("opts")
-
-              chan.exchange(name, type, symbolize(opts))
-            end
+            @request_exchange ||= declare.exchange(exchange_config)
           end
 
           def recurrent_task interval, &block
@@ -61,8 +58,12 @@ module Liebre
             spec.fetch("queue", {})
           end
 
-          def symbolize opts
-            opts.reduce({}) { |new, (key, value)| new.merge!(key.to_sym => value) }
+          def bind_config
+            spec.fetch("bind", {})
+          end
+
+          def declare
+            @declare ||= Shared::Declare.new(chan)
           end
 
           attr_reader :chan, :spec, :tasks
