@@ -8,10 +8,9 @@ module Liebre
           builder.call
         end
 
-        def initialize extension_classes, base_class, chan, context
+        def initialize extension_classes, base_class, context
           @extension_classes = extension_classes
           @base_class        = base_class
-          @chan              = chan
           @context           = context
         end
 
@@ -25,7 +24,7 @@ module Liebre
           next_class, *rest = extension_classes
 
           if next_class
-            next_instance = next_class.new(stack, chan, context)
+            next_instance = next_class.new(stack, context)
             build(next_instance, rest)
           else
             current
@@ -33,10 +32,10 @@ module Liebre
         end
 
         def base
-          @base ||= base_class.new(nil, chan, context)
+          @base ||= base_class.new(nil, context)
         end
 
-        attr_reader :extension_classes, :base_class, :chan, :context
+        attr_reader :extension_classes, :base_class, :context
 
       end
     end

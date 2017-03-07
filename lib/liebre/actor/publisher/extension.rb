@@ -3,11 +3,10 @@ module Liebre
     class Publisher
       module Extension
 
-        attr_reader :stack, :chan, :context
+        attr_reader :stack, :context
 
-        def initialize stack, chan, context
+        def initialize stack, context
           @stack   = stack
-          @chan    = chan
           @context = context
         end
 

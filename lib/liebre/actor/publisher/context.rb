@@ -3,6 +3,8 @@ module Liebre
     class Publisher
       class Context
 
+        attr_reader :chan, :spec
+
         def initialize chan, spec
           @chan = chan
           @spec = spec
@@ -21,8 +23,6 @@ module Liebre
         def declare
           @declare ||= Shared::Declare.new(chan)
         end
-
-        attr_reader :chan, :spec
 
       end
     end
