@@ -61,15 +61,15 @@ module Liebre
         handler = handler_class.new(payload, meta, callback)
         handler.call
       rescue => e
-        # TODO: Log error
         callback.reject()
       end
 
       def queue
-        @queue ||= begin
-          context = Context.new(chan, spec)
-          context.queue
-        end
+        context.queue
+      end
+
+      def context
+        @context ||= Context.new(chan, spec)
       end
 
       attr_reader :chan, :spec, :handler_class, :pool

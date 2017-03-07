@@ -36,10 +36,11 @@ module Liebre
     private
 
       def exchange
-        @exchange ||= begin
-          context = Context.new(chan, spec)
-          context.exchange
-        end
+        context.exchange
+      end
+
+      def context
+        @context ||= Context.new(chan, spec)
       end
 
       attr_reader :chan, :spec

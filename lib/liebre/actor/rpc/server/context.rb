@@ -9,28 +9,32 @@ module Liebre
             @spec = spec
           end
 
-          def exchange
-            chan.default_exchange
+          def response_exchange
+            @response_exchange ||= chan.default_exchange
           end
 
           def request_queue
-            name = queue_config.fetch("name")
-            opts = queue_config.fetch("opts")
+            @request_queue ||= begin
+              name = queue_config.fetch("name")
+              opts = queue_config.fetch("opts")
 
-            chan.queue(name, symbolize(opts)).tap do |queue|
-              queue.bind(request_exchange)
+              chan.queue(name, symbolize(opts)).tap do |queue|
+                queue.bind(request_exchange)
+              end
+            end
+          end
+
+          def request_exchange
+            @request_exchange ||= begin
+              name = exchange_config.fetch("name")
+              type = exchange_config.fetch("type")
+              opts = exchange_config.fetch("opts")
+
+              chan.exchange(name, type, symbolize(opts))
             end
           end
 
         private
-
-          def request_exchange
-            name = exchange_config.fetch("name")
-            type = exchange_config.fetch("type")
-            opts = exchange_config.fetch("opts")
-
-            chan.exchange(name, type, symbolize(opts))
-          end
 
           def queue_config
             spec.fetch("queue")

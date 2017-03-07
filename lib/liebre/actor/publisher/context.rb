@@ -9,11 +9,13 @@ module Liebre
         end
 
         def exchange
-          name = exchange_config.fetch("name")
-          type = exchange_config.fetch("type")
-          opts = exchange_config.fetch("opts", {})
+          @exchange ||= begin
+            name = exchange_config.fetch("name")
+            type = exchange_config.fetch("type")
+            opts = exchange_config.fetch("opts", {})
 
-          chan.exchange(name, type, symbolize(opts))
+            chan.exchange(name, type, symbolize(opts))
+          end
         end
 
       private

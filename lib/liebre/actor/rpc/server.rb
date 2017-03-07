@@ -60,11 +60,11 @@ module Liebre
         end
 
         def queue
-          @queue ||= context.request_queue
+          context.request_queue
         end
 
         def exchange
-          @exchange ||= context.exchange
+          context.response_exchange
         end
 
         def context
