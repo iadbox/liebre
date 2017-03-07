@@ -1,6 +1,8 @@
 require 'concurrent'
 
 require 'liebre/actor/publisher/context'
+require 'liebre/actor/publisher/extension'
+
 
 module Liebre
   module Actor
