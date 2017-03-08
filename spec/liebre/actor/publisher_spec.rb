@@ -50,41 +50,51 @@ RSpec.describe Liebre::Actor::Publisher do
   end
 
   describe '#__publish__' do
-    it 'publishes the message' do
-      # standard publication
-      #
-      expect(exchange).to receive(:publish).
-        with("some_data", :routing_key => "bar")
+    context 'standard publication' do
+      it 'publishes the message and runs after_publish callback' do
+        expect(exchange).to receive(:publish).
+          with("some_data", :routing_key => "bar")
 
-      expect(target).to receive(:published).
-        with("some_data",)
+        expect(target).to receive(:published).
+          with("some_data")
 
-      subject.__publish__("some_data", :routing_key => "bar")
+        subject.__publish__("some_data", :routing_key => "bar")
+      end
+    end
 
-      # cancel
-      #
-      expect(target).to receive(:canceled).with("cancel",)
-      subject.__publish__("cancel", :routing_key => "bar")
+    context 'on cancellation' do
+      it 'does not publish the message and runs after_cancel callback' do
+        expect(exchange).not_to receive(:publish)
 
-      # override publication
-      #
-      expect(exchange).to receive(:publish).
-        with("overriden", :routing_key => "bar")
+        expect(target).to receive(:canceled).
+          with("cancel")
 
-      expect(target).to receive(:published).
-        with("overriden")
+        subject.__publish__("cancel", :routing_key => "bar")
+      end
+    end
 
-      subject.__publish__("override", :routing_key => "bar")
+    context 'with an extension overriding the message' do
+      it 'publishes the overriden message and runs after_publish callback' do
+        expect(exchange).to receive(:publish).
+          with("overriden", :routing_key => "bar")
 
-      # modify publication
-      #
-      expect(exchange).to receive(:publish).
-        with("modify", {})
+        expect(target).to receive(:published).
+          with("overriden")
 
-      expect(target).to receive(:published).
-        with("modify")
+        subject.__publish__("override", :routing_key => "bar")
+      end
+    end
 
-      subject.__publish__("modify", :routing_key => "bar")
+    context 'with an extension manipulating the message' do
+      it 'publishes the modified message and runs after_publish callback' do
+        expect(exchange).to receive(:publish).
+          with("modify", {})
+
+        expect(target).to receive(:published).
+          with("modify")
+
+        subject.__publish__("modify", :routing_key => "bar")
+      end
     end
   end
 
