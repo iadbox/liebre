@@ -42,6 +42,8 @@ module Liebre
           Stack::OnCallback
         end
 
+        attr_reader :stack, :context
+
       end
     end
   end
