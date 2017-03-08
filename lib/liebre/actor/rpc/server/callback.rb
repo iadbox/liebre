@@ -4,18 +4,23 @@ module Liebre
       class Server
         class Callback
 
-          def initialize server, meta
+          def initialize server, info, meta
             @server = server
+            @info   = info
             @meta   = meta
           end
 
           def reply response, opts = {}
-            server.reply(meta, response, opts)
+            server.reply(info, meta, response, opts)
+          end
+
+          def fail error
+            server.fail(info, meta, error)
           end
 
         private
 
-          attr_reader :server, :meta
+          attr_reader :server, :info, :meta
 
         end
       end

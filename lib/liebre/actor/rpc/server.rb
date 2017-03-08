@@ -1,7 +1,10 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/server/context'
+require 'liebre/actor/rpc/server/handler'
 require 'liebre/actor/rpc/server/callback'
+require 'liebre/actor/rpc/server/extension'
+require 'liebre/actor/rpc/server/stack'
 
 module Liebre
   module Actor
@@ -9,9 +12,7 @@ module Liebre
       class Server
         include Concurrent::Async
 
-        OPTS = {:block => false, :manual_ack => false}
-
-        def initialize chan, spec, handler_class, pool
+        def initialize chan, spec, handler_class, pool, extension_classes = []
           super()
 
           @chan          = chan
@@ -23,55 +24,34 @@ module Liebre
         def start() async.__start__(); end
         def stop()  async.__stop__();  end
 
-        def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
+        def handle(info, meta, payload) async.__handle__(info, meta, payload); end
 
-        def __start__
-          queue.subscribe(OPTS) do |info, meta, payload|
-            async.__handle_request__(meta, payload)
-          end
-          exchange
-        end
+        def reply(info, meta, response, opts = {}) async.__reply__(info, meta, response, opts); end
+        def fail(info, meta, error)                async.__fail__(info, meta, error);           end
 
-        def __stop__
-          queue.unsubscribe
-          chan.close
-        end
+        def __start__() stack.start; end
+        def __stop__()  stack.stop;  end
 
-        def __reply__ meta, response, opts = {}
-          opts = opts.merge :routing_key    => meta.reply_to,
-                            :correlation_id => meta.correlation_id
+        def __handle__(info, meta, payload) stack.handle(info, meta, payload); end
 
-          exchange.publish(response, opts)
-        end
-
-        def __handle_request__ meta, payload
-          callback = Callback.new(self, meta)
-
-          pool.post { handle(payload, meta, callback) }
-        end
+        def __reply__(info, meta, response, opts = {}) stack.reply(info, meta, response, opts); end
+        def __fail__(info, meta, error)                stack.fail(info, meta, error);           end
 
       private
 
-        def handle payload, meta, callback
-          handler = handler_class.new(payload, meta, callback)
-          handler.call
-        rescue => e
-          # TODO: Log error
-        end
-
-        def queue
-          context.request_queue
-        end
-
-        def exchange
-          context.response_exchange
+        def stack
+          @stack ||= Stack.new(self, extension_classes, context, handler)
         end
 
         def context
-          @context ||= Context.new(chan, spec)
+          Context.new(chan, spec)
         end
 
-        attr_reader :chan, :spec, :handler_class, :pool
+        def handler
+          Handler.new(handler_class, pool)
+        end
+
+        attr_reader :chan, :spec, :handler_class, :pool, :extension_classes
 
       end
     end
