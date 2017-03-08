@@ -20,6 +20,10 @@ module Liebre
           stack.after_cancel(tag, payload, meta, callback)
         end
 
+        def on_failure tag, error
+          stack.on_failure(tag, error)
+        end
+
         def on_callback tag, action, opts
           stack.on_callback(tag, action, opts)
         end
@@ -36,6 +40,10 @@ module Liebre
 
         def consume
           Stack::OnConsume
+        end
+
+        def failure
+          Stack::OnFailure
         end
 
         def callback

@@ -1,10 +1,10 @@
-require 'liebre/actor/consumer/stack/on_callback/action'
+require 'liebre/actor/consumer/stack/on_failure/action'
 
 module Liebre
   module Actor
     class Consumer
       class Stack
-        module OnCallback
+        module OnFailure
 
           def self.do action, opts = {}
             Action.new(action, opts)

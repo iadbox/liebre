@@ -18,6 +18,10 @@ module Liebre
           def after_cancel _tag, _message, _meta, _callback
           end
 
+          def on_failure _tag, _error
+            callback.reject()
+          end
+
           def on_callback _tag, action, opts
             callback.do(action, opts)
           end

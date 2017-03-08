@@ -20,6 +20,10 @@ module Liebre
           consumer.reject(info, opts)
         end
 
+        def fail error
+          consumer.fail(info, error)
+        end
+
       private
 
         attr_reader :consumer, :info

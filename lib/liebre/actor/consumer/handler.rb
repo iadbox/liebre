@@ -20,7 +20,7 @@ module Liebre
           handler = handler_class.new(payload, meta, callback)
           handler.call
         rescue => e
-          callback.reject()
+          callback.fail(e)
         end
 
         attr_reader :handler_class, :pool

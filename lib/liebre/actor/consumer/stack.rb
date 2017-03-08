@@ -46,15 +46,26 @@ module Liebre
           tag    = info.delivery_tag
           result = extensions.on_callback(tag, action, opts)
 
+          run_callback(info, result)
+        end
+
+        def fail info, error
+          tag    = info.delivery_tag
+          result = extensions.on_failure(tag, error)
+
+          run_callback(info, result)
+        end
+
+      private
+
+        def run_callback info, result
           case result.action
             when :ack    then context.queue.ack(info, result.opts)
             when :nack   then context.queue.nack(info, result.opts)
             when :reject then context.queue.reject(info, result.opts)
           end
-          extensions.after_callback(tag, result.action, result.opts)
+          extensions.after_callback(info.delivery_tag, result.action, result.opts)
         end
-
-      private
 
         def do_consume payload, meta, callback
           handler.call(payload, meta, callback)
