@@ -39,9 +39,7 @@ module Liebre
             result   = extensions.on_request(tag, payload, meta, callback)
 
             if result.continue?
-              do_consume(result.payload, result.meta, result.callback)
-            else
-              do_cancel(tag, payload, meta, callback)
+              do_handle(result.payload, result.meta, result.callback)
             end
           end
 
@@ -50,7 +48,7 @@ module Liebre
             result = extensions.on_reply(tag, response, opts)
 
             if result.continue?
-              do_reply(meta, result.response, result.opts)
+              do_reply(info, meta, result.response, result.opts)
             end
           end
 
@@ -59,25 +57,23 @@ module Liebre
             result = extensions.on_failure(tag, error)
 
             if result.respond?
-              do_reply(meta, result.response, result.opts)
+              do_reply(info, meta, result.response, result.opts)
             end
           end
 
         private
 
-          def do_consume payload, meta, callback
+          def do_handle payload, meta, callback
             handler.call(payload, meta, callback)
           end
 
-          def do_cancel tag, payload, meta, callback
-            extensions.after_cancel(tag, payload, meta, callback)
-          end
-
-          def do_reply meta, response, opts
+          def do_reply info, meta, response, opts
+            tag  = info.delivery_tag
             opts = opts.merge :routing_key    => meta.reply_to,
                               :correlation_id => meta.correlation_id
 
             context.response_exchange.publish(response, opts)
+            extensions.after_reply(tag, response, opts)
           end
 
           def extensions

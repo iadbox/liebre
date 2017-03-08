@@ -15,10 +15,11 @@ module Liebre
         def initialize chan, spec, handler_class, pool, extension_classes = []
           super()
 
-          @chan          = chan
-          @spec          = spec
-          @handler_class = handler_class
-          @pool          = pool
+          @chan              = chan
+          @spec              = spec
+          @handler_class     = handler_class
+          @pool              = pool
+          @extension_classes = extension_classes
         end
 
         def start() async.__start__(); end
