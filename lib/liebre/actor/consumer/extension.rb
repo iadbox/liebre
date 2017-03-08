@@ -12,20 +12,20 @@ module Liebre
           stack.start
         end
 
-        def on_consume payload, meta, callback
-          stack.on_consume(payload, meta, callback)
+        def on_consume tag, payload, meta, callback
+          stack.on_consume(tag, payload, meta, callback)
         end
 
-        def after_cancel payload, meta, callback
-          stack.after_cancel(payload, meta, callback)
+        def after_cancel tag, payload, meta, callback
+          stack.after_cancel(tag, payload, meta, callback)
         end
 
-        def on_callback action, opts
-          stack.on_callback(action, opts)
+        def on_callback tag, action, opts
+          stack.on_callback(tag, action, opts)
         end
 
-        def after_callback action, opts
-          stack.after_callback(action, opts)
+        def after_callback tag, action, opts
+          stack.after_callback(tag, action, opts)
         end
 
         def stop

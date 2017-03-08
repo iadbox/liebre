@@ -48,7 +48,7 @@ RSpec.describe Liebre::Actor::Consumer do
     Class.new do
       include Liebre::Actor::Consumer::Extension
 
-      def on_consume payload, meta, callback
+      def on_consume _tag, payload, meta, callback
         case payload
           when "cancel_and_ack" then callback.ack(); consume.cancel()
           when "modify"         then consume.continue("do_ack", meta, callback)
@@ -56,11 +56,11 @@ RSpec.describe Liebre::Actor::Consumer do
         end
       end
 
-      def after_callback action, _opts
+      def after_callback _tag, action, _opts
         target.callback(action)
       end
 
-      def after_cancel payload, _meta, _callback
+      def after_cancel _tag, payload, _meta, _callback
         target.cancel(payload)
       end
 
@@ -120,16 +120,18 @@ RSpec.describe Liebre::Actor::Consumer do
         handler_block = given_block
       end
 
-      pool_block.call(:info, :meta, payload)
+      pool_block.call(info, :meta, payload)
       handler_block
     end
+
+    let(:info) { double 'info', :delivery_tag => 12345 }
 
     context 'standard consumption with ack' do
       it 'handles the message, returns ack and runs after_callback callback' do
         ack_handler_block = consume("do_ack")
 
         expect(queue).to receive(:ack).
-          with(:info, {})
+          with(info, {})
 
         expect(target).to receive(:callback).
           with(:ack)
@@ -143,7 +145,7 @@ RSpec.describe Liebre::Actor::Consumer do
         reject_handler_block = consume("do_reject")
 
         expect(queue).to receive(:reject).
-          with(:info, :requeue => true)
+          with(info, :requeue => true)
 
         expect(target).to receive(:callback).
           with(:reject)
@@ -157,7 +159,7 @@ RSpec.describe Liebre::Actor::Consumer do
         reject_handler_block = consume("fail")
 
         expect(queue).to receive(:reject).
-          with(:info, {})
+          with(info, {})
 
         expect(target).to receive(:callback).
           with(:reject)
@@ -172,12 +174,12 @@ RSpec.describe Liebre::Actor::Consumer do
           with("cancel_and_ack")
 
         expect(queue).to receive(:ack).
-          with(:info, {})
+          with(info, {})
 
         expect(target).to receive(:callback).
           with(:ack)
 
-        pool_block.call(:info, :meta, "cancel_and_ack")
+        pool_block.call(info, :meta, "cancel_and_ack")
       end
     end
 
@@ -186,7 +188,7 @@ RSpec.describe Liebre::Actor::Consumer do
         ack_handler_block = consume("modify")
 
         expect(queue).to receive(:ack).
-          with(:info, {})
+          with(info, {})
 
         expect(target).to receive(:callback).
           with(:ack)
