@@ -1,6 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/publisher/context'
+require 'liebre/actor/publisher/resources'
 require 'liebre/actor/publisher/extension'
 require 'liebre/actor/publisher/stack'
 

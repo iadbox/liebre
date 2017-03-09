@@ -1,6 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/server/context'
+require 'liebre/actor/rpc/server/resources'
 require 'liebre/actor/rpc/server/handler'
 require 'liebre/actor/rpc/server/callback'
 require 'liebre/actor/rpc/server/extension'
