@@ -1,52 +1,48 @@
-require 'liebre/actor/rpc/client/extension/on_request'
-require 'liebre/actor/rpc/client/extension/on_reply'
-require 'liebre/actor/rpc/client/extension/on_expire'
-
 module Liebre
   module Actor
     module RPC
       class Client
         module Extension
 
-          def initialize _chan, _context
+          attr_reader :stack, :context
+
+          def initialize stack, context
+            @stack   = stack
+            @context = context
           end
 
           def start
+            stack.start
           end
 
-          def on_request payload, opts
-            request.continue(payload, opts)
+          def on_request tag, payload, opts
+            stack.on_request(tag, payload, opts)
           end
 
-          def after_request _payload, _opts
+          def after_request tag, payload, opts
+            stack.after_request(tag, payload, opts)
           end
 
-          def on_reply response
-            reply.reply(response)
+          def on_reply tag, response
+            stack.on_reply(tag, response)
           end
 
-          def on_expire
-            expire.no_reply
-          end
-
-          def after_reply response
+          def after_reply tag, response
+            stack.after_reply(tag, response)
           end
 
           def stop
+            stack.stop
           end
 
         private
 
           def request
-            OnRequest
+            Stack::OnRequest
           end
 
           def reply
-            OnReply
-          end
-
-          def expire
-            OnExpire
+            Stack::OnReply
           end
 
         end

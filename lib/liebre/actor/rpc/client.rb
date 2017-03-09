@@ -2,6 +2,8 @@ require 'concurrent'
 
 require 'liebre/actor/rpc/client/context'
 require 'liebre/actor/rpc/client/pending'
+require 'liebre/actor/rpc/client/extension'
+require 'liebre/actor/rpc/client/stack'
 
 module Liebre
   module Actor
@@ -9,80 +11,48 @@ module Liebre
       class Client
         include Concurrent::Async
 
-        TIMEOUT         = 5
-        OPTS            = {:block => false, :manual_ack => false}
-        EXPIRE_INTERVAL = 60
+        REQUEST_TIMEOUT = 5
 
-        def initialize chan, spec
+        def initialize chan, spec, extension_classes = []
           super()
 
-          @chan = chan
-          @spec = spec
+          @chan              = chan
+          @spec              = spec
+          @extension_classes = extension_classes
         end
 
         def start() async.__start__(); end
         def stop()  async.__stop__();  end
 
-        def request payload, opts = {}, timeout = TIMEOUT
+        def request payload, opts = {}, timeout = REQUEST_TIMEOUT
           call_ivar     = await.__request__(payload, opts, timeout)
           response_ivar = call_ivar.value
 
           response_ivar.value(timeout)
         end
 
-        def __start__
-          response_queue.subscribe(OPTS) do |_info, meta, payload|
-            async.__handle_response__(meta, payload)
-          end
-          request_exchange
+        def reply(meta, payload) async.__reply__(meta, payload); end
+        def expire()             async.__expire__();             end
 
-          context.recurrent_task(EXPIRE_INTERVAL) do
-            async.__expire__
-          end
-        end
+        def __start__() stack.start; end
+        def __stop__()  stack.stop; end
 
-        def __stop__
-          response_queue.unsubscribe
-          context.cancel_tasks
-          chan.close
-        end
+        def __request__(payload, opts, timeout) stack.request(payload, opts, timeout); end
+        def __reply__(meta, response)           stack.reply(meta, response);           end
 
-        def __request__ payload, opts = {}, timeout = TIMEOUT
-          pending.add(timeout) do |correlation_id|
-            opts = opts.merge :reply_to       => response_queue.name,
-                              :correlation_id => correlation_id
-
-            request_exchange.publish(payload, opts)
-          end
-        end
-
-        def __handle_response__ meta, response
-          pending.finish(meta.correlation_id, response)
-        end
-
-        def __expire__
-          pending.expire
-        end
+        def __expire__() stack.expire; end
 
       private
 
-        def response_queue
-          context.response_queue
-        end
-
-        def request_exchange
-          context.request_exchange
+        def stack
+          @stack ||= Stack.new(self, extension_classes, context)
         end
 
         def context
-          @context ||= Context.new(chan, spec)
+          Context.new(chan, spec)
         end
 
-        def pending
-          @pending ||= Pending.new
-        end
-
-        attr_reader :chan, :spec, :handler_class, :pool
+        attr_reader :chan, :spec, :extension_classes
 
       end
     end
