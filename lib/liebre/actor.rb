@@ -1,4 +1,5 @@
 require "liebre/actor/shared"
+require "liebre/actor/context"
 
 require "liebre/actor/publisher"
 require "liebre/actor/consumer"
