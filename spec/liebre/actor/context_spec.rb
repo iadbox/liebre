@@ -20,9 +20,35 @@ RSpec.describe Liebre::Actor::Context do
   describe '#resources' do
     let(:resources) { double 'resources' }
 
+    let(:exchange_config) { {"name" => "foo", "type" => "direct"} }
+    let(:queue_config)    { {"name" => "foo", "opts" => {"fake" => "opts"}} }
+    let(:bind_config)     { [{"routing_key" => "one"}, {"routing_key" => "other"}] }
+
+    let(:queue)    { double 'queue' }
+    let(:exchange) { double 'exchange' }
+
     it 'builds resources properly' do
-      expect(resources_class).to receive(:new).
-        with(chan, "bar" => "baz").and_return(resources)
+      expect(resources_class).to receive(:new) do |declare, spec|
+        expect(spec).to eq "bar" => "baz"
+
+        expect(chan).to receive(:default_exchange).
+          and_return(exchange)
+        expect(declare.default_exchange).to eq exchange
+
+        expect(chan).to receive(:exchange).with("foo", "direct", {}).
+          and_return(exchange)
+        expect(declare.exchange(exchange_config)).to eq exchange
+
+        expect(chan).to receive(:queue).with("foo", :fake => "opts").
+          and_return(queue)
+        expect(declare.queue(queue_config)).to eq queue
+
+        expect(queue).to receive(:bind).with(exchange, :routing_key => "one")
+        expect(queue).to receive(:bind).with(exchange, :routing_key => "other")
+        declare.bind(queue, exchange, bind_config)
+
+        resources
+      end
 
       expect(subject.resources).to eq resources
     end
