@@ -47,7 +47,7 @@ module Liebre
             if result.continue?
               do_request(correlation_id, result.payload, result.opts, timeout)
             else
-              Concurrent::IVar.new(result.response)
+              do_direct_reply(correlation_id, result.response)
             end
           end
 
@@ -73,6 +73,11 @@ module Liebre
             pending.add(correlation_id, timeout).tap do
               extensions.after_request(correlation_id, payload, opts)
             end
+          end
+
+          def do_direct_reply correlation_id, response
+            extensions.after_reply(correlation_id, response)
+            Concurrent::IVar.new(response)
           end
 
           def extensions

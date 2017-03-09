@@ -13,6 +13,8 @@ module Liebre
                         :exclusive   => true,
                         :durable     => false}
 
+          attr_reader :chan, :spec
+
           def initialize chan, spec
             @chan = chan
             @spec = spec
@@ -66,7 +68,7 @@ module Liebre
             @declare ||= Shared::Declare.new(chan)
           end
 
-          attr_reader :chan, :spec, :tasks
+          attr_reader :tasks
 
         end
       end
