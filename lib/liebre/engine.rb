@@ -1,4 +1,6 @@
-require "liebre/engine/starter"
+require "liebre/engine/parser"
+require "liebre/engine/builder"
+
 require "liebre/engine/repository"
 
 module Liebre
@@ -11,25 +13,34 @@ module Liebre
     def start
       bridge.start
 
-      starter.start_all.map do |(type, name, actor)|
+      parser.each do |type, name, opts|
+        actor = build(type, name, opts)
+        actor.start
+
         repo.insert(type, name, actor)
       end
+    end
+
+    def stop
+      repo.each(&:stop)
+      bridge.stop
+
+      repo.clear
     end
 
     def repo
       @repo ||= Repository.new
     end
 
-    def stop
-      bridge.stop
-
-      repo.clear
-    end
-
   private
 
-    def starter
-      Starter.new(bridge, config.actors)
+    def build type, name, opts
+      builder = Builder.new(bridge, type, name, opts)
+      builder.call
+    end
+
+    def parser
+      Parser.new(config.actors)
     end
 
     def bridge

@@ -2,28 +2,16 @@ require 'concurrent'
 
 RSpec.describe Liebre::Engine do
 
+  let(:publisher_1_opts) { double 'publisher_1_opts' }
+  let(:publisher_2_opts) { double 'publisher_2_opts' }
+  let(:consumer_opts)    { double 'consumer_opts' }
+
   let :actors do
-    {
-      "publishers" => {
-        "first" => {
-          "connection" => "conn_1",
-          "resources"  => "first_resources"
-        },
-        "second" => {
-          "connection" => "conn_2",
-          "resources"  => "second_resources"
-        }
-      },
-      "consumers" => {
-        "third" => {
-          "connection"     => "conn_1",
-          "prefetch_count" => 15,
-          "pool_size"      => 16,
-          "handler_class"  => "Test::MyHandler",
-          "resources"      => "third_resources"
-        }
-      }
-    }
+    {:publishers => {
+       :one => publisher_1_opts,
+       :two => publisher_2_opts},
+     :consumers => {
+       :three => consumer_opts}}
   end
 
   let(:config) { double 'config', :actors => actors }
@@ -32,60 +20,55 @@ RSpec.describe Liebre::Engine do
 
   let(:bridge) { double 'bridge' }
 
-  let(:chan_1) { double 'chan_1' }
-  let(:chan_2) { double 'chan_2' }
-  let(:chan_3) { double 'chan_3' }
-
-  let(:handler_class) { double 'handler_class' }
-
   before do
     allow(Liebre::Bridge).to receive(:new).
       with(config).and_return(bridge)
-
-    allow(bridge).to receive(:open_channel).
-      with(actors["publishers"]["first"]).and_return(chan_1)
-    allow(bridge).to receive(:open_channel).
-      with(actors["publishers"]["second"]).and_return(chan_2)
-    allow(bridge).to receive(:open_channel).
-      with(actors["consumers"]["third"]).and_return(chan_3)
-
-    allow(Object).to receive(:const_get).
-      with("Test::MyHandler").and_return(handler_class)
   end
 
-  describe '#start' do
-    let(:first_publisher)  { double 'first_publisher' }
-    let(:second_publisher) { double 'second_publisher' }
-    let(:third_consumer)   { double 'third_consumer' }
+  describe '#start, #repo and #stop' do
+    let(:publisher_1) { double 'publisher_1' }
+    let(:publisher_2) { double 'publisher_2' }
+    let(:consumer)    { double 'consumer' }
 
-    let(:publisher_class) { Liebre::Actor::Publisher }
-    let(:consumer_class)  { Liebre::Actor::Consumer }
+    let(:builder_1) { double 'builder_1', :call => publisher_1 }
+    let(:builder_2) { double 'builder_2', :call => publisher_2 }
+    let(:builder_3) { double 'builder_3', :call => consumer }
 
-    it 'starts actors properly' do
-      expect(publisher_class).to receive(:new).
-        with(chan_1, "first_resources").and_return(first_publisher)
-      expect(publisher_class).to receive(:new).
-        with(chan_2, "second_resources").and_return(second_publisher)
+    it 'starts the bridge and all actors' do
+      expect(bridge).to receive(:start)
 
-      expect(consumer_class).to receive :new do |chan, resources, handler, pool|
-        expect(chan     ).to eq chan_3
-        expect(resources).to eq "third_resources"
-        expect(handler  ).to eq handler_class
-        expect(pool     ).to be_a Concurrent::FixedThreadPool
+      expect(described_class::Builder).to receive(:new).
+        with(bridge, :publishers, :one, publisher_1_opts).
+        and_return(builder_1)
 
-        third_consumer
-      end
+      expect(described_class::Builder).to receive(:new).
+        with(bridge, :publishers, :two, publisher_2_opts).
+        and_return(builder_2)
 
-      expect(bridge          ).to receive(:start)
-      expect(first_publisher ).to receive(:start)
-      expect(second_publisher).to receive(:start)
-      expect(third_consumer  ).to receive(:start)
+      expect(described_class::Builder).to receive(:new).
+        with(bridge, :consumers, :three, consumer_opts).
+        and_return(builder_3)
+
+      expect(publisher_1).to receive(:start)
+      expect(publisher_2).to receive(:start)
+      expect(consumer   ).to receive(:start)
+
       subject.start
 
       repo = subject.repo
-      expect(repo.publisher("first") ).to eq first_publisher
-      expect(repo.publisher("second")).to eq second_publisher
-      expect(repo.consumer("third")  ).to eq third_consumer
+      expect(repo.publisher(:one) ).to eq publisher_1
+      expect(repo.publisher(:two) ).to eq publisher_2
+      expect(repo.consumer(:three)).to eq consumer
+
+      expect(publisher_1).to receive(:stop)
+      expect(publisher_2).to receive(:stop)
+      expect(consumer   ).to receive(:stop)
+
+      expect(bridge).to receive(:stop)
+
+      subject.stop
+
+      expect(repo.all).to eq []
     end
   end
 

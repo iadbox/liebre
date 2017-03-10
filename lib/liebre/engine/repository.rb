@@ -11,11 +11,19 @@ module Liebre
 
       def insert type, name, resource
         case type
-          when "publishers"  then publishers[name]  = resource
-          when "consumers"   then consumers[name]   = resource
-          when "rpc_clients" then rpc_clients[name] = resource
-          when "rpc_servers" then rpc_servers[name] = resource
+          when :publishers  then publishers[name]  = resource
+          when :consumers   then consumers[name]   = resource
+          when :rpc_clients then rpc_clients[name] = resource
+          when :rpc_servers then rpc_servers[name] = resource
         end
+      end
+
+      def all
+        publishers.values + consumers.values + rpc_clients.values + rpc_servers.values
+      end
+
+      def each &block
+        all.each(&block)
       end
 
       def clear
