@@ -1,121 +1,128 @@
 RSpec.describe Liebre::Actor::Consumer do
 
-  let(:chan) { double 'chan' }
-
-  let(:exchange_name) { "foo" }
-  let(:exchange_opts) { {:durable => false} }
-  let(:queue_name)    { "bar" }
-  let(:queue_opts)    { {:auto_delete => true} }
+  let(:chan)    { double 'chan' }
+  let(:declare) { double 'declare' }
+  let(:handler) { double 'handler' }
 
   let :spec do
-    {
-      "exchange" => {
-        "name" => "foo",
-        "type" => "fanout",
-        "opts" => {"durable" => true}},
-      "queue" => {
-        "name" => "bar",
-        "opts" => {"durable" => true}},
-      "bind" => [
-        {"routing_key" => "baz"},
-        {"routing_key" => "qux"}]}
+    {:exchange => {:fake => "exchange_config"},
+     :queue    => {:fake => "queue_config"},
+     :bind     => {:fake => "bind_config"}}
   end
 
-  let :handler_class do
-    Class.new do
-
-      def initialize payload, _meta, callback
-        @payload  = payload
-        @callback = callback
-      end
-
-      def call
-        case @payload
-          when "do_ack"    then @callback.ack()
-          when "do_nack"   then @callback.nack()
-          when "do_reject" then @callback.reject(:requeue => true)
-          when "fail"      then raise "simulated_crash"
-        end
-      end
-
-    end
+  let :context do
+    double 'context', :chan    => chan,
+                      :declare => declare,
+                      :handler => handler,
+                      :spec    => spec
   end
 
-  let(:pool) { double 'pool' }
+  subject { described_class.new(context) }
 
-  subject { described_class.new(chan, spec, handler_class, pool) }
+  before do
+    allow(subject).to receive(:async).and_return(subject)
+
+    allow(declare).to receive(:queue).
+      with(:fake => "queue_config").and_return(queue)
+
+    allow(declare).to receive(:exchange).
+      with(:fake => "exchange_config").and_return(exchange)
+
+    allow(declare).to receive(:bind).
+      with(queue, exchange, :fake => "bind_config")
+  end
 
   let(:queue)    { double 'queue' }
   let(:exchange) { double 'exchange' }
 
-  before do
-    allow(chan).to receive(:queue).
-      with("bar", :durable => true).
-      and_return(queue)
+  let(:info)    { double 'info' }
+  let(:meta)    { double 'meta' }
+  let(:payload) { "some_data" }
 
-    allow(chan).to receive(:exchange).
-      with("foo", "fanout", :durable => true).
-      and_return(exchange)
+  describe '#start' do
+    context 'on success' do
+      it 'declares and binds queue and exchange, and subscribes to the queue' do
+        expect(declare).to receive(:queue).
+          with(:fake => "queue_config").and_return(queue)
+
+        expect(declare).to receive(:exchange).
+          with(:fake => "exchange_config").and_return(exchange)
+
+        expect(declare).to receive(:bind).
+          with(queue, exchange, :fake => "bind_config")
+
+        subscription_block = nil
+        expect(queue).to receive(:subscribe) do |opts, &block|
+          expect(opts).to eq :block => false, :manual_ack => true
+          subscription_block = block
+        end
+
+        subject.start
+
+        expect(subject).to receive(:consume).
+          with(info, meta, payload)
+
+        subscription_block.(info, meta, payload)
+      end
+    end
   end
 
-  describe 'everything' do
-    before do
-      allow(subject).to receive(:async).and_return(subject)
+  describe '#consume' do
+    context 'on success' do
+      it 'runs the handler with a callbacks object' do
+        callback = nil
+        expect(handler).to receive :call do |given_payload, given_meta, given_callback|
+          expect(given_payload).to eq payload
+          expect(given_meta   ).to eq meta
+
+          callback = given_callback
+        end
+
+        subject.consume(info, meta, payload)
+
+        expect(subject).to receive(:ack).with(info, {})
+        callback.ack()
+
+        expect(subject).to receive(:nack).with(info, {})
+        callback.nack()
+
+        expect(subject).to receive(:reject).with(info, :requeue => true)
+        callback.reject(:requeue => true)
+      end
     end
-    it 'starts, stops and acks' do
-      # expect queue to bind the exchange
-      #
-      expect(queue).to receive(:bind).
-        with(exchange, :routing_key => "baz")
 
-      expect(queue).to receive(:bind).
-        with(exchange, :routing_key => "qux")
+    context 'on handler failure' do
+      let(:error) { double 'error' }
 
-      # expect subscription setup
-      #
-      pool_block = nil
-      expect(queue).to receive :subscribe do |opts, &given_block|
-        expect(opts).to eq :block => false, :manual_ack => true
+      it 'calls failed on the consumer' do
+        error_block = nil
+        expect(handler).to receive :call do |payload, meta, callback, &block|
+          error_block = block
+        end
 
-        pool_block = given_block
+        subject.consume(info, meta, payload)
+
+        expect(subject).to receive(:failed).
+          with(info, error)
+
+        error_block.(error)
       end
+    end
+  end
 
-      # start the consumer
-      #
-      subject.__start__()
+  describe '#ack, #nack, #reject and #failed' do
+    it 'delegates to the queue' do
+      expect(queue).to receive(:ack).with(info, {})
+      subject.ack(info)
 
-      # handle message that will ack
-      #
-      ack_handler_block = nil
-      expect(pool).to receive :post do |&given_block|
-        ack_handler_block = given_block
-      end
-      pool_block.call(:info, :meta, "do_ack")
+      expect(queue).to receive(:nack).with(info, {})
+      subject.nack(info)
 
-      expect(subject).to receive(:ack).with(:info, {})
-      ack_handler_block.()
+      expect(queue).to receive(:reject).with(info, :requeue => true)
+      subject.reject(info, :requeue => true)
 
-      # handle message that will reject
-      #
-      reject_handler_block = nil
-      expect(pool).to receive :post do |&given_block|
-        reject_handler_block = given_block
-      end
-      pool_block.call(:info, :meta, "do_reject")
-
-      expect(subject).to receive(:reject).with(:info, :requeue => true)
-      reject_handler_block.()
-
-      # handle message that will reject because of a failure
-      #
-      reject_handler_block = nil
-      expect(pool).to receive :post do |&given_block|
-        reject_handler_block = given_block
-      end
-      pool_block.call(:info, :meta, "fail")
-
-      expect(subject).to receive(:reject).with(:info, {})
-      reject_handler_block.()
+      expect(queue).to receive(:reject).with(info, {})
+      subject.failed(info, :some_error)
     end
   end
 

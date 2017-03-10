@@ -1,11 +1,10 @@
 module Liebre
   module Actor
     class Consumer
-      class Context
+      class Resources
 
-        def initialize chan, spec
-          @chan = chan
-          @spec = spec
+        def initialize context
+          @context = context
         end
 
         def queue
@@ -21,22 +20,26 @@ module Liebre
       private
 
         def exchange_config
-          spec.fetch("exchange")
+          spec.fetch(:exchange)
         end
 
         def queue_config
-          spec.fetch("queue")
+          spec.fetch(:queue)
         end
 
         def bind_config
-          spec.fetch("bind", {})
+          spec.fetch(:bind, {})
+        end
+
+        def spec
+          context.spec
         end
 
         def declare
-          @declare ||= Shared::Declare.new(chan)
+          context.declare
         end
 
-        attr_reader :chan, :spec
+        attr_reader :context
 
       end
     end

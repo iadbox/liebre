@@ -1,6 +1,6 @@
 require 'concurrent'
 
-require 'liebre/actor/consumer/context'
+require 'liebre/actor/consumer/resources'
 require 'liebre/actor/consumer/callback'
 
 module Liebre
@@ -10,25 +10,25 @@ module Liebre
 
       OPTS = {:block => false, :manual_ack => true}
 
-      def initialize chan, spec, handler_class, pool
+      def initialize context
         super()
 
-        @chan          = chan
-        @spec          = spec
-        @handler_class = handler_class
-        @pool          = pool
+        @context = context
       end
 
       def start() async.__start__(); end
       def stop()  async.__stop__();  end
 
-      def ack(info, opts = {})    async.__ack__(info, opts);    end
-      def nack(info, opts = {})   async.__nack__(info, opts);   end
-      def reject(info, opts = {}) async.__reject__(info, opts); end
+      def consume(info, meta, payload) async.__consume__(info, meta, payload); end
+
+      def ack(info, opts = {})    async.__ack__(info, opts);     end
+      def nack(info, opts = {})   async.__nack__(info, opts);    end
+      def reject(info, opts = {}) async.__reject__(info, opts);  end
+      def failed(info, error)     async.__failed__(info, error); end
 
       def __start__
         queue.subscribe(OPTS) do |info, meta, payload|
-          async.__handle_message__(info, meta, payload)
+          consume(info, meta, payload)
         end
       end
 
@@ -37,10 +37,12 @@ module Liebre
         chan.close
       end
 
-      def __handle_message__ info, meta, payload
+      def __consume__ info, meta, payload
         callback = Callback.new(self, info)
 
-        pool.post { handle(payload, meta, callback) }
+        handler.call(payload, meta, callback) do |error|
+          callback.failed(error)
+        end
       end
 
       def __ack__ info, opts = {}
@@ -55,24 +57,29 @@ module Liebre
         queue.reject(info, opts)
       end
 
+      def __failed__ info, error
+        queue.reject(info, {})
+      end
+
     private
 
-      def handle payload, meta, callback
-        handler = handler_class.new(payload, meta, callback)
-        handler.call
-      rescue => e
-        callback.reject()
-      end
-
       def queue
-        context.queue
+        resources.queue
       end
 
-      def context
-        @context ||= Context.new(chan, spec)
+      def chan
+        context.chan
       end
 
-      attr_reader :chan, :spec, :handler_class, :pool
+      def handler
+        context.handler
+      end
+
+      def resources
+        @resources ||= Resources.new(context)
+      end
+
+      attr_reader :context
 
     end
   end
