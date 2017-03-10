@@ -1,6 +1,7 @@
 require 'concurrent'
 
-require 'liebre/actor/rpc/client/context'
+require 'liebre/actor/rpc/client/resources'
+require 'liebre/actor/rpc/client/task'
 require 'liebre/actor/rpc/client/pending'
 
 module Liebre
@@ -13,11 +14,10 @@ module Liebre
         OPTS            = {:block => false, :manual_ack => false}
         EXPIRE_INTERVAL = 60
 
-        def initialize chan, spec
+        def initialize context
           super()
 
-          @chan = chan
-          @spec = spec
+          @context = context
         end
 
         def start() async.__start__(); end
@@ -29,20 +29,22 @@ module Liebre
 
           response_ivar.value(timeout)
         end
+        def reply(meta, response) async.__reply__(meta, response); end
+
+        def expire() async.__expire__(); end
 
         def __start__
           response_queue.subscribe(OPTS) do |_info, meta, payload|
-            async.__handle_response__(meta, payload)
+            reply(meta, payload)
           end
           request_exchange
 
-          context.recurrent_task(EXPIRE_INTERVAL) do
-            async.__expire__
-          end
+          task.every(EXPIRE_INTERVAL) { expire }
         end
 
         def __stop__
           response_queue.unsubscribe
+          task.cancel_all
           chan.close
         end
 
@@ -55,7 +57,7 @@ module Liebre
           end
         end
 
-        def __handle_response__ meta, response
+        def __reply__ meta, response
           pending.finish(meta.correlation_id, response)
         end
 
@@ -66,22 +68,30 @@ module Liebre
       private
 
         def response_queue
-          context.response_queue
+          resources.response_queue
         end
 
         def request_exchange
-          context.request_exchange
+          resources.request_exchange
         end
 
-        def context
-          @context ||= Context.new(chan, spec)
+        def chan
+          context.chan
+        end
+
+        def resources
+          @resources ||= Resources.new(context)
+        end
+
+        def task
+          @task ||= Task.new
         end
 
         def pending
           @pending ||= Pending.new
         end
 
-        attr_reader :chan, :spec, :handler_class, :pool
+        attr_reader :context
 
       end
     end
