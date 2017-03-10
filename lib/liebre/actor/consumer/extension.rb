@@ -1,45 +1,36 @@
+require 'liebre/actor/consumer/extension/on_consume'
+require 'liebre/actor/consumer/extension/on_callback'
+
 module Liebre
   module Actor
     class Consumer
       module Extension
 
-        def initialize stack, context
-          @stack   = stack
-          @context = context
+        def initialize _chan, _context
         end
 
         def start
-          stack.start
         end
 
-        def on_consume payload, meta, callback
-          stack.on_consume(payload, meta, callback)
+        def on_consume message, meta, callback
+          consume.continue(message, meta, callback)
         end
 
-        def after_cancel payload, meta, callback
-          stack.after_cancel(payload, meta, callback)
-        end
-
-        def on_callback action, opts
-          stack.on_callback(action, opts)
-        end
-
-        def after_callback action, opts
-          stack.after_callback(action, opts)
+        def on_callback _message, _meta, action, opts
+          callback.do(action, opts)
         end
 
         def stop
-          stack.stop
         end
 
       private
 
         def consume
-          Stack::OnConsume
+          OnConsume
         end
 
         def callback
-          Stack::OnCallback
+          OnCallback
         end
 
       end

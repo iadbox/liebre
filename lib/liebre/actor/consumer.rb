@@ -1,10 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/consumer/context'
-require 'liebre/actor/consumer/handler'
 require 'liebre/actor/consumer/callback'
-require 'liebre/actor/consumer/extension'
-require 'liebre/actor/consumer/stack'
 
 module Liebre
   module Actor
@@ -13,50 +10,69 @@ module Liebre
 
       OPTS = {:block => false, :manual_ack => true}
 
-      def initialize chan, spec, handler_class, pool, extension_classes = []
+      def initialize chan, spec, handler_class, pool
         super()
 
-        @chan              = chan
-        @spec              = spec
-        @handler_class     = handler_class
-        @pool              = pool
-        @extension_classes = extension_classes
+        @chan          = chan
+        @spec          = spec
+        @handler_class = handler_class
+        @pool          = pool
       end
 
       def start() async.__start__(); end
       def stop()  async.__stop__();  end
 
-      def consume(info, meta, payload) async.__consume__(info, meta, payload); end
+      def ack(info, opts = {})    async.__ack__(info, opts);    end
+      def nack(info, opts = {})   async.__nack__(info, opts);   end
+      def reject(info, opts = {}) async.__reject__(info, opts); end
 
-      def ack(info, opts = {})    async.__callback__(:ack,    info, opts); end
-      def nack(info, opts = {})   async.__callback__(:nack,   info, opts); end
-      def reject(info, opts = {}) async.__callback__(:reject, info, opts); end
+      def __start__
+        queue.subscribe(OPTS) do |info, meta, payload|
+          async.__handle_message__(info, meta, payload)
+        end
+      end
 
-      def __start__() stack.start; end
-      def __stop__()  stack.stop;  end
+      def __stop__
+        queue.unsubscribe
+        chan.close
+      end
 
-      def __consume__(info, meta, payload) stack.consume(info, meta, payload); end
-      def __callback__(action, info, opts) stack.callback(action, info, opts); end
+      def __handle_message__ info, meta, payload
+        callback = Callback.new(self, info)
+
+        pool.post { handle(payload, meta, callback) }
+      end
+
+      def __ack__ info, opts = {}
+        queue.ack(info, opts)
+      end
+
+      def __nack__ info, opts = {}
+        queue.nack(info, opts)
+      end
+
+      def __reject__ info, opts = {}
+        queue.reject(info, opts)
+      end
 
     private
+
+      def handle payload, meta, callback
+        handler = handler_class.new(payload, meta, callback)
+        handler.call
+      rescue => e
+        callback.reject()
+      end
 
       def queue
         context.queue
       end
 
-      def stack
-        @stack ||= Stack.new(self, extension_classes, context, handler)
-      end
-
-      def handler
-        Handler.new(handler_class, pool)
-      end
-
       def context
-        Context.new(chan, spec)
+        @context ||= Context.new(chan, spec)
       end
 
-      attr_reader :chan, :spec, :handler_class, :pool, :extension_classes
+      attr_reader :chan, :spec, :handler_class, :pool
 
     end
   end

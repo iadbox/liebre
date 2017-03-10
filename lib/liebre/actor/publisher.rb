@@ -21,12 +21,21 @@ module Liebre
       def start() async.__start__(); end
       def stop()  async.__stop__();  end
 
-      def publish(payload, opts = {}) async.__publish__(payload, opts); end
+      def publish payload, opts = {}
+        async.__publish__(payload, opts)
+      end
 
-      def __start__() stack.start; end
-      def __stop__()  stack.stop;  end
+      def __start__
+        stack.start
+      end
 
-      def __publish__(payload, opts = {}) stack.publish(payload, opts); end
+      def __stop__
+        stack.stop
+      end
+
+      def __publish__ payload, opts = {}
+        stack.publish(payload, opts)
+      end
 
     private
 
