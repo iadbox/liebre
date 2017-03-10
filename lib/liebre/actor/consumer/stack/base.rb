@@ -11,18 +11,18 @@ module Liebre
           def start
           end
 
-          def on_consume _tag, payload, meta, callback
+          def on_consume payload, meta, callback
             consume.continue(payload, meta, callback)
           end
 
-          def after_cancel _tag, _message, _meta, _callback
+          def after_cancel _message, _meta, _callback
           end
 
-          def on_callback _tag, action, opts
+          def on_callback action, opts
             callback.do(action, opts)
           end
 
-          def after_callback _tag, _action, _opts
+          def after_callback _action, _opts
           end
 
           def stop

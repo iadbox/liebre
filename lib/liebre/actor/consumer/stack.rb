@@ -32,26 +32,24 @@ module Liebre
 
         def consume info, meta, payload
           callback = Callback.new(consumer, info)
-          tag      = info.delivery_tag
-          result   = extensions.on_consume(tag, payload, meta, callback)
+          result   = extensions.on_consume(payload, meta, callback)
 
           if result.continue?
             do_consume(result.payload, result.meta, result.callback)
           else
-            do_cancel(tag, payload, meta, callback)
+            do_cancel(payload, meta, callback)
           end
         end
 
         def callback action, info, opts
-          tag    = info.delivery_tag
-          result = extensions.on_callback(tag, action, opts)
+          result = extensions.on_callback(action, opts)
 
           case result.action
             when :ack    then context.queue.ack(info, result.opts)
             when :nack   then context.queue.nack(info, result.opts)
             when :reject then context.queue.reject(info, result.opts)
           end
-          extensions.after_callback(tag, result.action, result.opts)
+          extensions.after_callback(result.action, result.opts)
         end
 
       private
@@ -60,8 +58,8 @@ module Liebre
           handler.call(payload, meta, callback)
         end
 
-        def do_cancel tag, payload, meta, callback
-          extensions.after_cancel(tag, payload, meta, callback)
+        def do_cancel payload, meta, callback
+          extensions.after_cancel(payload, meta, callback)
         end
 
         def extensions
