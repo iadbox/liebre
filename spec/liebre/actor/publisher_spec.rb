@@ -12,11 +12,19 @@ RSpec.describe Liebre::Actor::Publisher do
 
   subject { described_class.new(context) }
 
+  let(:exchange) { double 'exchange' }
+
   before do
     allow(subject).to receive(:async).and_return(subject)
-  end
 
-  let(:exchange) { double 'exchange' }
+    allow(declare).to receive(:exchange).
+      with(:fake => "config").and_return(exchange)
+
+    allow(context).to receive(:build_stack) do |resources, base|
+      expect(resources.exchange).to eq exchange
+      base
+    end
+  end
 
   describe '#start' do
     it 'declares the exchange' do
@@ -29,9 +37,6 @@ RSpec.describe Liebre::Actor::Publisher do
 
   describe '#publish' do
     it 'publishes through the exchange' do
-      allow(declare).to receive(:exchange).
-        with(:fake => "config").and_return(exchange)
-
       expect(exchange).to receive(:publish).
         with("some_data", :routing_key => "bar")
 

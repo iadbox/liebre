@@ -1,6 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/publisher/resources'
+require 'liebre/actor/publisher/base'
 
 module Liebre
   module Actor
@@ -19,25 +20,25 @@ module Liebre
       def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
       def __start__
-        exchange
+        stack.start
       end
 
       def __stop__
-        chan.close
+        stack.stop
       end
 
       def __publish__ payload, opts = {}
-        exchange.publish(payload, opts)
+        stack.publish(payload, opts)
       end
 
     private
 
-      def exchange
-        resources.exchange
+      def stack
+        @stack ||= context.build_stack(resources, base)
       end
 
-      def chan
-        context.chan
+      def base
+        Base.new(resources.exchange, context.chan)
       end
 
       def resources
