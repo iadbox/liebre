@@ -18,7 +18,7 @@ module Liebre
           end
 
           def on_reply tag, response, opts
-            stack.on_reply(tag, response, opts)
+            stack.on_reply(tag, response)
           end
 
           def after_reply tag, response, opts
