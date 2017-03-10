@@ -1,7 +1,6 @@
 require 'concurrent'
 
 require 'liebre/actor/consumer/context'
-require 'liebre/actor/consumer/resources'
 require 'liebre/actor/consumer/handler'
 require 'liebre/actor/consumer/callback'
 require 'liebre/actor/consumer/extension'

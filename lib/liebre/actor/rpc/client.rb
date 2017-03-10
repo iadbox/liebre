@@ -1,7 +1,6 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/client/context'
-require 'liebre/actor/rpc/client/resources'
 require 'liebre/actor/rpc/client/pending'
 require 'liebre/actor/rpc/client/extension'
 require 'liebre/actor/rpc/client/stack'
