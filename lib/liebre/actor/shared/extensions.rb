@@ -24,7 +24,7 @@ module Liebre
           next_class, *rest = extension_classes
 
           if next_class
-            next_instance = next_class.new(current, context)
+            next_instance = next_class.new(stack, context)
             build(next_instance, rest)
           else
             current
