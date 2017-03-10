@@ -43,7 +43,6 @@ module Liebre
 
         def __stop__
           response_queue.unsubscribe
-          context.cancel_tasks
           chan.close
         end
 
