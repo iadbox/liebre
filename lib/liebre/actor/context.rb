@@ -1,4 +1,5 @@
 require "liebre/actor/context/declare"
+require "liebre/actor/context/handler"
 
 module Liebre
   module Actor
@@ -18,6 +19,10 @@ module Liebre
 
       def declare
         @declare ||= Declare.new(chan)
+      end
+
+      def handler
+        @handler ||= Handler.new(opts)
       end
 
     end
