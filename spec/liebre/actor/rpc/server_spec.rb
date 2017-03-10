@@ -37,6 +37,13 @@ RSpec.describe Liebre::Actor::RPC::Server do
 
     allow(declare).to receive(:bind).
       with(request_queue, request_exchange, :fake => "bind_config")
+
+    allow(context).to receive(:build_stack) do |resources, base|
+      expect(resources.request_queue    ).to eq request_queue
+      expect(resources.request_exchange ).to eq request_exchange
+      expect(resources.response_exchange).to eq response_exchange
+      base
+    end
   end
 
   let(:info)    { double 'info' }

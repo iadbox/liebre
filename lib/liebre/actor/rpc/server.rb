@@ -1,6 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/server/resources'
+require 'liebre/actor/rpc/server/base'
 require 'liebre/actor/rpc/server/callback'
 
 module Liebre
@@ -26,51 +27,33 @@ module Liebre
         def failed(meta, error)              async.__failed__(meta, error);         end
 
         def __start__
-          queue.subscribe(OPTS) do |info, meta, payload|
-            handle(meta, payload)
-          end
-          exchange
+          stack.start
         end
 
         def __stop__
-          queue.unsubscribe
-          chan.close
+          stack.stop
         end
 
         def __handle__ meta, payload
-          callback = Callback.new(self, meta)
-
-          handler.call(payload, meta, callback) do |error|
-            callback.failed(error)
-          end
+          stack.handle(meta, payload)
         end
 
         def __reply__ meta, response, opts = {}
-          opts = opts.merge :routing_key    => meta.reply_to,
-                            :correlation_id => meta.correlation_id
-
-          exchange.publish(response, opts)
+          stack.reply(meta, response, opts)
         end
 
         def __failed__ meta, error
+          stack.failed(meta, error)
         end
 
       private
 
-        def queue
-          resources.request_queue
+        def stack
+          @stack ||= context.build_stack(resources, base)
         end
 
-        def exchange
-          resources.response_exchange
-        end
-
-        def chan
-          context.chan
-        end
-
-        def handler
-          context.handler
+        def base
+          Base.new(self, resources, context, Callback)
         end
 
         def resources
