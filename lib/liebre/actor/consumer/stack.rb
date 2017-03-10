@@ -42,7 +42,7 @@ module Liebre
         end
 
         def callback action, info, opts
-          result = extensions.on_callback(action, opts)
+          result = extensions.on_consume(action, opts)
 
           case result.action
             when :ack    then context.queue.ack(info, result.opts)
