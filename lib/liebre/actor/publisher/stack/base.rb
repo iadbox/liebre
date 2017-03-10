@@ -5,7 +5,7 @@ module Liebre
         class Base
           include Extension
 
-          def initialize _stack, _context
+          def initialize _stack, _chan, _context
           end
 
           def start

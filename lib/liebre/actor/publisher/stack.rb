@@ -6,19 +6,20 @@ module Liebre
     class Publisher
       class Stack
 
-        def initialize extension_classes, context
+        def initialize extension_classes, chan, context
           @extension_classes = extension_classes
+          @chan              = chan
           @context           = context
         end
 
         def start
-          context.exchange
+          exchange
           extensions.start
         end
 
         def stop
           extensions.stop
-          context.chan.close
+          chan.close
         end
 
         def publish payload, opts
@@ -34,7 +35,7 @@ module Liebre
       private
 
         def do_publish payload, opts
-          context.exchange.publish(payload, opts)
+          exchange.publish(payload, opts)
 
           extensions.after_publish(payload, opts)
         end
@@ -43,13 +44,15 @@ module Liebre
           extensions.after_cancel(payload, opts)
         end
 
-        def extensions
-          @extensions ||= begin
-            Shared::Extensions.build(extension_classes, Base, context)
-          end
+        def exchange
+          context.exchange
         end
 
-        attr_reader :extension_classes, :context
+        def extensions
+          @extensions ||= Shared::Extensions.build(extension_classes, Base, chan, context)
+        end
+
+        attr_reader :extension_classes, :chan, :context
 
       end
     end

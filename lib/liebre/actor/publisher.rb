@@ -40,7 +40,7 @@ module Liebre
     private
 
       def stack
-        @stack ||= Stack.new(extension_classes, context)
+        @stack ||= Stack.new(extension_classes, chan, context)
       end
 
       def context
