@@ -2,8 +2,8 @@ RSpec.describe Liebre::Bridge do
 
   let(:adapter) { double 'adapter' }
 
-  let(:name_1) { "foo" }
-  let(:name_2) { "bar" }
+  let(:name_1) { :foo }
+  let(:name_2) { :bar }
   let(:opts_1) { double 'opts_1' }
   let(:opts_2) { double 'opts_2' }
 
@@ -31,7 +31,7 @@ RSpec.describe Liebre::Bridge do
     let(:chan) { double 'chan' }
 
     let :chan_opts do
-      {"connection" => name_2, "prefetch_count" => 8}
+      {:connection => name_2, :prefetch_count => 8}
     end
 
     it 'opens configured channels' do
@@ -42,7 +42,7 @@ RSpec.describe Liebre::Bridge do
       expect(conn_2).to receive(:open_channel).
         and_return(chan)
       expect(chan).to receive(:set_prefetch).
-        with(chan_opts["prefetch_count"])
+        with(chan_opts[:prefetch_count])
 
       expect(subject.open_channel(chan_opts)).to eq chan
     end

@@ -22,11 +22,11 @@ module Liebre
       end
 
       def conn_name
-        opts.fetch("connection")
+        opts.fetch(:connection)
       end
 
       def prefetch_count
-        opts.fetch("prefetch_count", DEFAULT_PREFETCH)
+        opts.fetch(:prefetch_count, DEFAULT_PREFETCH)
       end
 
       attr_reader :connections, :opts
