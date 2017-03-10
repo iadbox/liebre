@@ -42,10 +42,6 @@ RSpec.describe Liebre::Actor::RPC::Server do
 
   subject { described_class.new(chan, spec, handler_class, pool) }
 
-  before do
-    allow(subject).to receive(:async).and_return(subject)
-  end
-
   let(:request_queue)    { double 'request_queue' }
   let(:request_exchange) { double 'request_exchange' }
   let(:default_exchange) { double 'default_exchange' }
@@ -67,8 +63,6 @@ RSpec.describe Liebre::Actor::RPC::Server do
     let :meta do
       double 'meta', :reply_to => "foo", :correlation_id => "bar"
     end
-
-    let(:info) { double 'info', :delivery_tag => 54321 }
 
     it 'handles requests' do
       # expect queue to bind the exchange
@@ -95,10 +89,10 @@ RSpec.describe Liebre::Actor::RPC::Server do
       expect(pool).to receive :post do |&given_block|
         reply_handler_block = given_block
       end
-      pool_block.call(info, meta, "payload")
+      pool_block.call(:info, meta, "payload")
 
       expect(subject).to receive(:reply).
-        with(info, meta, "response_to(payload)", {})
+        with(meta, "response_to(payload)", {})
 
       sleep(0.2)
       reply_handler_block.()
@@ -108,7 +102,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
       expect(default_exchange).to receive(:publish).
         with("response", :routing_key => "foo", :correlation_id => "bar")
 
-      subject.__reply__(info, meta, "response", {})
+      subject.__reply__(meta, "response")
 
       # preform a request that fails
       #
@@ -116,7 +110,7 @@ RSpec.describe Liebre::Actor::RPC::Server do
       expect(pool).to receive :post do |&given_block|
         fail_handler_block = given_block
       end
-      pool_block.call(info, meta, "fail")
+      pool_block.call(:info, meta, "fail")
 
       expect(subject).not_to receive(:reply)
       sleep(0.2)

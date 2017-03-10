@@ -31,7 +31,8 @@ module Liebre
       def ack(info, opts = {})    async.__callback__(:ack,    info, opts); end
       def nack(info, opts = {})   async.__callback__(:nack,   info, opts); end
       def reject(info, opts = {}) async.__callback__(:reject, info, opts); end
-      def fail(info, error)       async.__fail__(info, error);             end
+
+      def fail(info, error) async.__fail__(info, error); end
 
       def __start__() stack.start; end
       def __stop__()  stack.stop;  end
