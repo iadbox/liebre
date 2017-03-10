@@ -17,9 +17,7 @@ module Liebre
       def start() async.__start__(); end
       def stop()  async.__stop__();  end
 
-      def publish payload, opts = {}
-        async.__publish__(payload, opts)
-      end
+      def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
       def __start__
         exchange
