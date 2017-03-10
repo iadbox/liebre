@@ -1,17 +1,16 @@
 require 'concurrent'
 
-require 'liebre/actor/publisher/context'
+require 'liebre/actor/publisher/resources'
 
 module Liebre
   module Actor
     class Publisher
       include Concurrent::Async
 
-      def initialize chan, spec
+      def initialize context
         super()
 
-        @chan = chan
-        @spec = spec
+        @context = context
       end
 
       def start() async.__start__(); end
@@ -34,14 +33,18 @@ module Liebre
     private
 
       def exchange
-        context.exchange
+        resources.exchange
       end
 
-      def context
-        @context ||= Context.new(chan, spec)
+      def chan
+        context.chan
       end
 
-      attr_reader :chan, :spec
+      def resources
+        @resources ||= Resources.new(context)
+      end
+
+      attr_reader :context
 
     end
   end

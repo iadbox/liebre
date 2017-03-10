@@ -12,6 +12,10 @@ module Liebre
         @opts = opts
       end
 
+      def spec
+        opts.fetch(:resources, {})
+      end
+
       def declare
         @declare ||= Declare.new(chan)
       end

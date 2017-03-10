@@ -1,11 +1,10 @@
 module Liebre
   module Actor
     class Publisher
-      class Context
+      class Resources
 
-        def initialize chan, spec
-          @chan = chan
-          @spec = spec
+        def initialize context
+          @context = context
         end
 
         def exchange
@@ -15,14 +14,18 @@ module Liebre
       private
 
         def exchange_config
-          spec.fetch("exchange")
+          spec.fetch(:exchange)
+        end
+
+        def spec
+          context.spec
         end
 
         def declare
-          @declare ||= Shared::Declare.new(chan)
+          context.declare
         end
 
-        attr_reader :chan, :spec
+        attr_reader :context
 
       end
     end

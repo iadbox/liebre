@@ -1,31 +1,41 @@
 RSpec.describe Liebre::Actor::Publisher do
 
-  let(:chan) { double 'chan' }
+  let(:chan)    { double 'chan' }
+  let(:declare) { double 'declare' }
+  let(:spec)    { {:exchange => {:fake => "config"}} }
 
-  let :spec do
-    {
-      "exchange" => {
-        "name" => "foo",
-        "type" => "fanout",
-        "opts" => {"durable" => true}}}
+  let :context do
+    double 'context', :chan    => chan,
+                      :declare => declare,
+                      :spec    => spec
   end
 
-  subject { described_class.new(chan, spec) }
+  subject { described_class.new(context) }
+
+  before do
+    allow(subject).to receive(:async).and_return(subject)
+  end
 
   let(:exchange) { double 'exchange' }
 
-  before do
-    allow(chan).to receive(:exchange).
-      with("foo", "fanout", :durable => true).
-      and_return(exchange)
+  describe '#start' do
+    it 'declares the exchange' do
+      expect(declare).to receive(:exchange).
+        with(:fake => "config").and_return(exchange)
+
+      subject.start
+    end
   end
 
-  describe '#__publish__' do
-    it 'publishes the message' do
+  describe '#publish' do
+    it 'publishes through the exchange' do
+      allow(declare).to receive(:exchange).
+        with(:fake => "config").and_return(exchange)
+
       expect(exchange).to receive(:publish).
         with("some_data", :routing_key => "bar")
 
-      subject.__publish__("some_data", :routing_key => "bar")
+      subject.publish("some_data", :routing_key => "bar")
     end
   end
 
