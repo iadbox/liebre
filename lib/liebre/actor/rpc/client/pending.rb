@@ -13,8 +13,11 @@ module Liebre
             @pending = {}
           end
 
-          def add correlation_id, timeout
+          def add timeout
             new_ivar.tap do |ivar|
+              correlation_id = new_correlation_id()
+              yield(correlation_id)
+
               store(correlation_id, ivar, timeout)
             end
           end
@@ -39,6 +42,10 @@ module Liebre
             expiration_time = current_time + timeout
 
             pending[correlation_id] = Request.new(ivar, expiration_time)
+          end
+
+          def new_correlation_id
+            SecureRandom.urlsafe_base64
           end
 
           def new_ivar
