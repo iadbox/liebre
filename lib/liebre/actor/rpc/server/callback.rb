@@ -13,6 +13,10 @@ module Liebre
             server.reply(meta, response, opts)
           end
 
+          def failed error
+            server.failed(meta, error)
+          end
+
         private
 
           attr_reader :server, :meta

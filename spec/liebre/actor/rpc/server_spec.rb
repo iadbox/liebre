@@ -1,120 +1,127 @@
 RSpec.describe Liebre::Actor::RPC::Server do
 
-  let(:chan) { double 'chan' }
-
-  let(:exchange_name) { "foo" }
-  let(:exchange_opts) { {:durable => false} }
-  let(:queue_name)    { "bar" }
-  let(:queue_opts)    { {:auto_delete => true} }
+  let(:chan)    { double 'chan' }
+  let(:declare) { double 'declare' }
+  let(:handler) { double 'handler' }
 
   let :spec do
-    {
-      "exchange" => {
-        "name" => "foo",
-        "type" => "fanout",
-        "opts" => {"durable" => true}},
-      "queue" => {
-        "name" => "bar",
-        "opts" => {"durable" => true}},
-      "bind" => {
-        "routing_key" => "baz"}}
+    {:exchange => {:fake => "exchange_config"},
+     :queue    => {:fake => "queue_config"},
+     :bind     => {:fake => "bind_config"}}
   end
 
-  let :handler_class do
-    Class.new do
-
-      def initialize payload, _meta, callback
-        @payload  = payload
-        @callback = callback
-      end
-
-      def call
-        case @payload
-          when "fail" then raise "simulated_crash"
-          else @callback.reply("response_to(#{@payload})")
-        end
-      end
-
-    end
+  let :context do
+    double 'context', :chan    => chan,
+                      :declare => declare,
+                      :handler => handler,
+                      :spec    => spec
   end
 
-  let(:pool) { double 'pool' }
+  subject { described_class.new(context) }
 
-  subject { described_class.new(chan, spec, handler_class, pool) }
-
-  let(:request_queue)    { double 'request_queue' }
-  let(:request_exchange) { double 'request_exchange' }
-  let(:default_exchange) { double 'default_exchange' }
+  let(:request_queue)     { double 'request_queue' }
+  let(:request_exchange)  { double 'request_exchange' }
+  let(:response_exchange) { double 'response_exchange' }
 
   before do
-    allow(chan).to receive(:queue).
-      with("bar", :durable => true).
-      and_return(request_queue)
+    allow(subject).to receive(:async).and_return(subject)
 
-    allow(chan).to receive(:exchange).
-      with("foo", "fanout", :durable => true).
-      and_return(request_exchange)
+    allow(declare).to receive(:queue).
+      with(:fake => "queue_config").and_return(request_queue)
 
-    allow(chan).to receive(:default_exchange).
-      and_return(default_exchange)
+    allow(declare).to receive(:exchange).
+      with(:fake => "exchange_config").and_return(request_exchange)
+
+    allow(declare).to receive(:default_exchange).
+      and_return(response_exchange)
+
+    allow(declare).to receive(:bind).
+      with(request_queue, request_exchange, :fake => "bind_config")
   end
 
-  describe '#start and #reply' do
-    let :meta do
-      double 'meta', :reply_to => "foo", :correlation_id => "bar"
+  let(:info)    { double 'info' }
+  let(:payload) { "some_data" }
+
+  let :meta do
+    double 'meta', :reply_to       => "reply.queue",
+                   :correlation_id => "123"
+  end
+
+  describe '#start' do
+    it 'declares and binds queue and exchange, and subscribes to the queue' do
+      expect(declare).to receive(:queue).
+        with(:fake => "queue_config").and_return(request_queue)
+
+      expect(declare).to receive(:exchange).
+        with(:fake => "exchange_config").and_return(request_exchange)
+
+      expect(declare).to receive(:default_exchange).
+        and_return(response_exchange)
+
+      expect(declare).to receive(:bind).
+        with(request_queue, request_exchange, :fake => "bind_config")
+
+      subscription_block = nil
+      expect(request_queue).to receive(:subscribe) do |opts, &block|
+        expect(opts).to eq :block => false, :manual_ack => false
+        subscription_block = block
+      end
+
+      subject.start
+
+      expect(subject).to receive(:handle).
+        with(meta, payload)
+
+      subscription_block.(info, meta, payload)
+    end
+  end
+
+  describe '#handle' do
+    context 'on success' do
+      let(:response) { "some_response" }
+
+      it 'runs the handler with a callback object' do
+        callback = nil
+        expect(handler).to receive :call do |given_payload, given_meta, given_callback|
+          expect(given_payload).to eq payload
+          expect(given_meta   ).to eq meta
+
+          callback = given_callback
+        end
+
+        subject.handle(meta, payload)
+
+        expect(subject).to receive(:reply).with(meta, "some_response", {})
+        callback.reply(response)
+      end
     end
 
-    it 'handles requests' do
-      # expect queue to bind the exchange
-      #
-      expect(request_queue).to receive(:bind).
-        with(request_exchange, :routing_key => "baz")
+    context 'on handler failure' do
+      let(:error) { double 'error' }
 
-      # expect subscription setup
-      #
-      pool_block = nil
-      expect(request_queue).to receive :subscribe do |opts, &given_block|
-        expect(opts).to eq :block => false, :manual_ack => false
+      it 'calls failed on the server' do
+        error_block = nil
+        expect(handler).to receive :call do |payload, meta, callback, &block|
+          error_block = block
+        end
 
-        pool_block = given_block
+        subject.handle(meta, payload)
+
+        expect(subject).to receive(:failed).
+          with(meta, error)
+
+        error_block.(error)
       end
+    end
+  end
 
-      # start the consumer
-      #
-      subject.__start__()
+  describe '#reply' do
+    let(:response) { "some_response" }
 
-      # preform a request and expect response
-      #
-      reply_handler_block = nil
-      expect(pool).to receive :post do |&given_block|
-        reply_handler_block = given_block
-      end
-      pool_block.call(:info, meta, "payload")
-
-      expect(subject).to receive(:reply).
-        with(meta, "response_to(payload)", {})
-
-      sleep(0.2)
-      reply_handler_block.()
-
-      # simulate reply
-      #
-      expect(default_exchange).to receive(:publish).
-        with("response", :routing_key => "foo", :correlation_id => "bar")
-
-      subject.__reply__(meta, "response")
-
-      # preform a request that fails
-      #
-      fail_handler_block = nil
-      expect(pool).to receive :post do |&given_block|
-        fail_handler_block = given_block
-      end
-      pool_block.call(:info, meta, "fail")
-
-      expect(subject).not_to receive(:reply)
-      sleep(0.2)
-      fail_handler_block.()
+    it 'delegates to the queue' do
+      expect(response_exchange).to receive(:publish).
+        with(response, :routing_key => "reply.queue", :correlation_id => "123")
+      subject.reply(meta, response)
     end
   end
 

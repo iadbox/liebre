@@ -19,6 +19,9 @@ RSpec.describe Liebre::Actor::Consumer do
 
   subject { described_class.new(context) }
 
+  let(:queue)    { double 'queue' }
+  let(:exchange) { double 'exchange' }
+
   before do
     allow(subject).to receive(:async).and_return(subject)
 
@@ -32,38 +35,33 @@ RSpec.describe Liebre::Actor::Consumer do
       with(queue, exchange, :fake => "bind_config")
   end
 
-  let(:queue)    { double 'queue' }
-  let(:exchange) { double 'exchange' }
-
   let(:info)    { double 'info' }
   let(:meta)    { double 'meta' }
   let(:payload) { "some_data" }
 
   describe '#start' do
-    context 'on success' do
-      it 'declares and binds queue and exchange, and subscribes to the queue' do
-        expect(declare).to receive(:queue).
-          with(:fake => "queue_config").and_return(queue)
+    it 'declares and binds queue and exchange, and subscribes to the queue' do
+      expect(declare).to receive(:queue).
+        with(:fake => "queue_config").and_return(queue)
 
-        expect(declare).to receive(:exchange).
-          with(:fake => "exchange_config").and_return(exchange)
+      expect(declare).to receive(:exchange).
+        with(:fake => "exchange_config").and_return(exchange)
 
-        expect(declare).to receive(:bind).
-          with(queue, exchange, :fake => "bind_config")
+      expect(declare).to receive(:bind).
+        with(queue, exchange, :fake => "bind_config")
 
-        subscription_block = nil
-        expect(queue).to receive(:subscribe) do |opts, &block|
-          expect(opts).to eq :block => false, :manual_ack => true
-          subscription_block = block
-        end
-
-        subject.start
-
-        expect(subject).to receive(:consume).
-          with(info, meta, payload)
-
-        subscription_block.(info, meta, payload)
+      subscription_block = nil
+      expect(queue).to receive(:subscribe) do |opts, &block|
+        expect(opts).to eq :block => false, :manual_ack => true
+        subscription_block = block
       end
+
+      subject.start
+
+      expect(subject).to receive(:consume).
+        with(info, meta, payload)
+
+      subscription_block.(info, meta, payload)
     end
   end
 

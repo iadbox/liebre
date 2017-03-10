@@ -1,6 +1,6 @@
 require 'concurrent'
 
-require 'liebre/actor/rpc/server/context'
+require 'liebre/actor/rpc/server/resources'
 require 'liebre/actor/rpc/server/callback'
 
 module Liebre
@@ -11,23 +11,23 @@ module Liebre
 
         OPTS = {:block => false, :manual_ack => false}
 
-        def initialize chan, spec, handler_class, pool
+        def initialize context
           super()
 
-          @chan          = chan
-          @spec          = spec
-          @handler_class = handler_class
-          @pool          = pool
+          @context = context
         end
 
         def start() async.__start__(); end
         def stop()  async.__stop__();  end
 
+        def handle(meta, payload) async.__handle__(meta, payload); end
+
         def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
+        def failed(meta, error)              async.__failed__(meta, error);         end
 
         def __start__
           queue.subscribe(OPTS) do |info, meta, payload|
-            async.__handle_request__(meta, payload)
+            handle(meta, payload)
           end
           exchange
         end
@@ -37,6 +37,14 @@ module Liebre
           chan.close
         end
 
+        def __handle__ meta, payload
+          callback = Callback.new(self, meta)
+
+          handler.call(payload, meta, callback) do |error|
+            callback.failed(error)
+          end
+        end
+
         def __reply__ meta, response, opts = {}
           opts = opts.merge :routing_key    => meta.reply_to,
                             :correlation_id => meta.correlation_id
@@ -44,34 +52,32 @@ module Liebre
           exchange.publish(response, opts)
         end
 
-        def __handle_request__ meta, payload
-          callback = Callback.new(self, meta)
-
-          pool.post { handle(payload, meta, callback) }
+        def __failed__ meta, error
         end
 
       private
 
-        def handle payload, meta, callback
-          handler = handler_class.new(payload, meta, callback)
-          handler.call
-        rescue => e
-          # TODO: Log error
-        end
-
         def queue
-          context.request_queue
+          resources.request_queue
         end
 
         def exchange
-          context.response_exchange
+          resources.response_exchange
         end
 
-        def context
-          @context ||= Context.new(chan, spec)
+        def chan
+          context.chan
         end
 
-        attr_reader :chan, :spec, :handler_class, :pool
+        def handler
+          context.handler
+        end
+
+        def resources
+          @resources ||= Resources.new(context)
+        end
+
+        attr_reader :context
 
       end
     end
