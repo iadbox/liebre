@@ -2,7 +2,6 @@ require 'concurrent'
 
 require 'liebre/actor/publisher/context'
 require 'liebre/actor/publisher/extension'
-require 'liebre/actor/publisher/stack'
 
 
 module Liebre
@@ -10,12 +9,11 @@ module Liebre
     class Publisher
       include Concurrent::Async
 
-      def initialize chan, spec, extension_classes = []
+      def initialize chan, spec
         super()
 
-        @chan              = chan
-        @spec              = spec
-        @extension_classes = extension_classes
+        @chan = chan
+        @spec = spec
       end
 
       def start() async.__start__(); end
@@ -26,28 +24,28 @@ module Liebre
       end
 
       def __start__
-        stack.start
+        exchange
       end
 
       def __stop__
-        stack.stop
+        chan.close
       end
 
       def __publish__ payload, opts = {}
-        stack.publish(payload, opts)
+        exchange.publish(payload, opts)
       end
 
     private
 
-      def stack
-        @stack ||= Stack.new(extension_classes, chan, context)
+      def exchange
+        context.exchange
       end
 
       def context
-        Context.new(chan, spec)
+        @context ||= Context.new(chan, spec)
       end
 
-      attr_reader :chan, :spec, :extension_classes
+      attr_reader :chan, :spec
 
     end
   end
