@@ -1,6 +1,5 @@
 require "liebre/actor/context/handler"
 require "liebre/actor/context/extensions"
-require "liebre/actor/context/declare"
 
 module Liebre
   module Actor
@@ -20,7 +19,7 @@ module Liebre
         @resources ||= begin
           spec = opts.fetch("resources", {})
 
-          resources_class.new(declare, spec)
+          resources_class.new(chan, spec)
         end
       end
 
@@ -36,10 +35,6 @@ module Liebre
       end
 
     private
-
-      def declare
-        @declare ||= Declare.new(chan)
-      end
 
       attr_reader :resources_class, :base_class
 
