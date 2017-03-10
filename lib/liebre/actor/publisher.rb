@@ -38,7 +38,7 @@ module Liebre
       end
 
       def base
-        Base.new(resources.exchange, context.chan)
+        Base.new(resources, context)
       end
 
       def resources

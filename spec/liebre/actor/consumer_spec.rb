@@ -33,6 +33,12 @@ RSpec.describe Liebre::Actor::Consumer do
 
     allow(declare).to receive(:bind).
       with(queue, exchange, :fake => "bind_config")
+
+    allow(context).to receive(:build_stack) do |resources, base|
+      expect(resources.exchange).to eq exchange
+      expect(resources.queue   ).to eq queue
+      base
+    end
   end
 
   let(:info)    { double 'info' }

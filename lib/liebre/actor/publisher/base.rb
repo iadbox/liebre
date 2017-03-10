@@ -7,9 +7,9 @@ module Liebre
     class Publisher
       class Base
 
-        def initialize exchange, chan
-          @exchange = exchange
-          @chan     = chan
+        def initialize resources, context
+          @resources = resources
+          @context   = context
         end
 
         def start
@@ -26,7 +26,15 @@ module Liebre
 
       private
 
-        attr_reader :exchange
+        def exchange
+          resources.exchange
+        end
+
+        def chan
+          context.chan
+        end
+
+        attr_reader :resources, :context
 
       end
     end
