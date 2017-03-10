@@ -6,19 +6,19 @@ module Liebre
       class Stack
         module OnCallback
 
-          def self.do action, opts = {}
+          def self.do action, opts
             Action.new(action, opts)
           end
 
-          def self.ack opts = {}
+          def self.ack opts
             Action.new(:ack, opts)
           end
 
-          def self.nack opts = {}
+          def self.nack opts
             Action.new(:nack, opts)
           end
 
-          def self.reject opts = {}
+          def self.reject opts
             Action.new(:reject, opts)
           end
 
