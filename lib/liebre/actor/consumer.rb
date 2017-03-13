@@ -1,7 +1,6 @@
 require 'concurrent'
 
 require 'liebre/actor/consumer/resources'
-require 'liebre/actor/consumer/base'
 require 'liebre/actor/consumer/callback'
 
 module Liebre
@@ -28,41 +27,52 @@ module Liebre
       def failed(info, error)     async.__failed__(info, error); end
 
       def __start__
-        stack.start
+        queue.subscribe(OPTS) do |info, meta, payload|
+          consume(info, meta, payload)
+        end
       end
 
       def __stop__
-        stack.stop
+        queue.unsubscribe
+        chan.close
       end
 
       def __consume__ info, meta, payload
-        stack.consume(info, meta, payload)
+        callback = Callback.new(self, info)
+
+        handler.call(payload, meta, callback) do |error|
+          callback.failed(error)
+        end
       end
 
       def __ack__ info, opts = {}
-        stack.callback(info, :ack, opts)
+        queue.ack(info, opts)
       end
 
       def __nack__ info, opts = {}
-        stack.callback(info, :nack, opts)
+        queue.nack(info, opts)
       end
 
       def __reject__ info, opts = {}
-        stack.callback(info, :reject, opts)
+        queue.reject(info, opts)
       end
 
       def __failed__ info, error
-        stack.failed(info, error)
+        queue.reject(info, {})
       end
 
     private
 
-      def stack
-        @stack ||= context.build_stack(resources, base)
+      def queue
+        resources.queue
       end
 
-      def base
-        Base.new(self, resources, context, Callback)
+      def chan
+        context.chan
+      end
+
+      def handler
+        context.handler
       end
 
       def resources
