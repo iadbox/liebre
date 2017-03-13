@@ -28,16 +28,33 @@ module Liebre
       def reject(info, opts = {}) async.__reject__(info, opts);  end
       def failed(info, error)     async.__failed__(info, error); end
 
-      def __start__() stack.start; end
-      def __stop__()  stack.stop;  end
+      def __start__
+        stack.start
+      end
 
-      def __consume__(info, meta, payload) stack.consume(info, meta, payload); end
+      def __stop__
+        stack.stop
+      end
 
-      def __ack__(info, opts = {})    stack.callback(info, :ack, opts);    end
-      def __nack__(info, opts = {})   stack.callback(info, :nack, opts);   end
-      def __reject__(info, opts = {}) stack.callback(info, :reject, opts); end
+      def __consume__ info, meta, payload
+        stack.consume(info, meta, payload)
+      end
 
-      def __failed__(info, error) stack.failed(info, error); end
+      def __ack__ info, opts = {}
+        stack.callback(info, :ack, opts)
+      end
+
+      def __nack__ info, opts = {}
+        stack.callback(info, :nack, opts)
+      end
+
+      def __reject__ info, opts = {}
+        stack.callback(info, :reject, opts)
+      end
+
+      def __failed__ info, error
+        stack.failed(info, error)
+      end
 
     private
 
