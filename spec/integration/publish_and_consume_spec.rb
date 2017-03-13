@@ -16,12 +16,27 @@ RSpec.describe "Publish and consume" do
   let(:handler_class) { double 'handler_class' }
   let(:handler)       { double 'handler' }
 
+  let :header_extension do
+    Class.new do
+      include Liebre::Actor::Publisher::Extension
+
+      def publish payload, opts
+        opts[:headers] = opts.
+          fetch(:headers, {}).
+          merge!("baz" => "qux")
+
+        stack.publish(payload, opts)
+      end
+    end
+  end
+
   let :actors do
     {
       :publishers => {
         :my_publisher => {
           :connection => "test_conn",
-          :resources  => {:exchange => exchange}
+          :resources  => {:exchange => exchange},
+          :extensions => [header_extension]
         }
       },
       :consumers => {
@@ -56,7 +71,7 @@ RSpec.describe "Publish and consume" do
 
     expect(handler_class).to receive :new do |payload, meta, callback|
       expect(payload     ).to eq payload
-      expect(meta.headers).to eq headers
+      expect(meta.headers).to eq headers.merge("baz" => "qux")
 
       handler
     end

@@ -2,6 +2,7 @@ require 'concurrent'
 
 require 'liebre/actor/consumer/resources'
 require 'liebre/actor/consumer/base'
+require 'liebre/actor/consumer/extension'
 require 'liebre/actor/consumer/callback'
 
 module Liebre
