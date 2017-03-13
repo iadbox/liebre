@@ -1,6 +1,5 @@
 require "liebre/actor/context/declare"
 require "liebre/actor/context/handler"
-require "liebre/actor/context/stack_builder"
 
 module Liebre
   module Actor
@@ -24,11 +23,6 @@ module Liebre
 
       def handler
         @handler ||= Handler.new(opts)
-      end
-
-      def build_stack resources, base
-        builder = StackBuilder.new(self, opts, resources, base)
-        builder.call
       end
 
     end
