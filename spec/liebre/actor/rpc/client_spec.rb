@@ -38,12 +38,6 @@ RSpec.describe Liebre::Actor::RPC::Client do
 
     allow(Concurrent::TimerTask).to receive(:new).
       with(anything).and_return(task)
-
-    allow(context).to receive(:build_stack) do |resources, base|
-      expect(resources.response_queue  ).to eq response_queue
-      expect(resources.request_exchange).to eq request_exchange
-      base
-    end
   end
 
   let(:info)     { double 'info' }

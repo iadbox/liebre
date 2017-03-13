@@ -1,7 +1,6 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/client/resources'
-require 'liebre/actor/rpc/client/base'
 require 'liebre/actor/rpc/client/task'
 require 'liebre/actor/rpc/client/pending'
 
@@ -35,45 +34,61 @@ module Liebre
         def expire() async.__expire__(); end
 
         def __start__
-          stack.start
+          response_queue.subscribe(OPTS) do |_info, meta, payload|
+            reply(meta, payload)
+          end
+          request_exchange
+
+          task.every(EXPIRE_INTERVAL) { expire }
         end
 
         def __stop__
-          stack.stop
+          response_queue.unsubscribe
+          task.cancel_all
+          chan.close
         end
 
         def __request__ payload, opts = {}, timeout = TIMEOUT
-          stack.request(payload, opts, timeout)
+          pending.add(timeout) do |correlation_id|
+            opts = opts.merge :reply_to       => response_queue.name,
+                              :correlation_id => correlation_id
+
+            request_exchange.publish(payload, opts)
+          end
         end
 
         def __reply__ meta, response
-          stack.reply(meta, response)
+          pending.finish(meta.correlation_id, response)
         end
 
         def __expire__
-          stack.expire
+          pending.expire
         end
 
       private
 
-        def stack
-          @stack ||= context.build_stack(resources, base)
+        def response_queue
+          resources.response_queue
         end
 
-        def base
-          Base.new(self, resources, context, pending, task)
+        def request_exchange
+          resources.request_exchange
+        end
+
+        def chan
+          context.chan
         end
 
         def resources
           @resources ||= Resources.new(context)
         end
 
-        def pending
-          @pending ||= Pending.new
-        end
-
         def task
           @task ||= Task.new
+        end
+
+        def pending
+          @pending ||= Pending.new
         end
 
         attr_reader :context

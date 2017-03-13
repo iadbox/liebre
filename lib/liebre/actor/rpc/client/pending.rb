@@ -32,7 +32,7 @@ module Liebre
             now = current_time
 
             pending.delete_if do |_correlation_id, request|
-              now  > request.expiration_time
+              now - request.start_time > timeout
             end
           end
 
