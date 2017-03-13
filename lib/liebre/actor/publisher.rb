@@ -20,17 +20,10 @@ module Liebre
 
       def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
-      def __start__
-        stack.start
-      end
+      def __start__() stack.start; end
+      def __stop__()  stack.stop; end
 
-      def __stop__
-        stack.stop
-      end
-
-      def __publish__ payload, opts = {}
-        stack.publish(payload, opts)
-      end
+      def __publish__(payload, opts = {}) stack.publish(payload, opts); end
 
     private
 

@@ -12,9 +12,7 @@ module Liebre
       class Client
         include Concurrent::Async
 
-        TIMEOUT         = 5
-        OPTS            = {:block => false, :manual_ack => false}
-        EXPIRE_INTERVAL = 60
+        TIMEOUT = 5
 
         def initialize context
           super()
@@ -35,25 +33,14 @@ module Liebre
 
         def expire() async.__expire__(); end
 
-        def __start__
-          stack.start
-        end
+        def __start__() stack.start; end
+        def __stop__()  stack.stop;  end
 
-        def __stop__
-          stack.stop
-        end
+        def __request__(payload, opts, timeout) stack.request(payload, opts, timeout); end
 
-        def __request__ payload, opts = {}, timeout = TIMEOUT
-          stack.request(payload, opts, timeout)
-        end
+        def __reply__(meta, response) stack.reply(meta, response); end
 
-        def __reply__ meta, response
-          stack.reply(meta, response)
-        end
-
-        def __expire__
-          stack.expire
-        end
+        def __expire__() stack.expire; end
 
       private
 

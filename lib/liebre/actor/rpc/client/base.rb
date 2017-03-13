@@ -4,6 +4,9 @@ module Liebre
       class Client
         class Base
 
+          OPTS            = {:block => false, :manual_ack => false}
+          EXPIRE_INTERVAL = 60
+
           def initialize client, resources, context, pending, task
             @client    = client
             @resources = resources
