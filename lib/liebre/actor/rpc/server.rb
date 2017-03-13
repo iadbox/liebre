@@ -2,6 +2,7 @@ require 'concurrent'
 
 require 'liebre/actor/rpc/server/resources'
 require 'liebre/actor/rpc/server/callback'
+require 'liebre/actor/rpc/server/core'
 
 module Liebre
   module Actor
@@ -25,56 +26,23 @@ module Liebre
         def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
         def failed(meta, error)              async.__failed__(meta, error);         end
 
-        def __start__
-          queue.subscribe(OPTS) do |info, meta, payload|
-            handle(meta, payload)
-          end
-          exchange
-        end
+        def __start__() core.start; end
+        def __stop__()  core.stop;  end
 
-        def __stop__
-          queue.unsubscribe
-          chan.close
-        end
+        def __handle__(meta, payload) core.handle(meta, payload); end
 
-        def __handle__ meta, payload
-          callback = Callback.new(self, meta)
+        def __reply__(meta, response, opts) core.reply(meta, response, opts); end
 
-          handler.call(payload, meta, callback) do |error|
-            callback.failed(error)
-          end
-        end
-
-        def __reply__ meta, response, opts = {}
-          opts = opts.merge :routing_key    => meta.reply_to,
-                            :correlation_id => meta.correlation_id
-
-          exchange.publish(response, opts)
-        end
-
-        def __failed__ meta, error
-        end
+        def __failed__(meta, error) core.failed(meta, error); end
 
       private
 
-        def queue
-          resources.request_queue
-        end
-
-        def exchange
-          resources.response_exchange
-        end
-
-        def chan
-          context.chan
-        end
-
-        def handler
-          context.handler
+        def core
+          @core ||= Core.new(self, resources, context, Callback)
         end
 
         def resources
-          @resources ||= Resources.new(context)
+          Resources.new(context)
         end
 
         attr_reader :context

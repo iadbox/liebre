@@ -2,6 +2,7 @@ require 'concurrent'
 
 require 'liebre/actor/consumer/resources'
 require 'liebre/actor/consumer/callback'
+require 'liebre/actor/consumer/core'
 
 module Liebre
   module Actor
@@ -26,57 +27,25 @@ module Liebre
       def reject(info, opts = {}) async.__reject__(info, opts);  end
       def failed(info, error)     async.__failed__(info, error); end
 
-      def __start__
-        queue.subscribe(OPTS) do |info, meta, payload|
-          consume(info, meta, payload)
-        end
-      end
+      def __start__() core.start; end
+      def __stop__()  core.stop;  end
 
-      def __stop__
-        queue.unsubscribe
-        chan.close
-      end
+      def __consume__(info, meta, payload) core.consume(info, meta, payload); end
 
-      def __consume__ info, meta, payload
-        callback = Callback.new(self, info)
+      def __ack__(info, opts) core.ack(info, opts); end
+      def __nack__(info, opts) core.nack(info, opts); end
+      def __reject__(info, opts) core.reject(info, opts); end
 
-        handler.call(payload, meta, callback) do |error|
-          callback.failed(error)
-        end
-      end
-
-      def __ack__ info, opts = {}
-        queue.ack(info, opts)
-      end
-
-      def __nack__ info, opts = {}
-        queue.nack(info, opts)
-      end
-
-      def __reject__ info, opts = {}
-        queue.reject(info, opts)
-      end
-
-      def __failed__ info, error
-        queue.reject(info, {})
-      end
+      def __failed__(info, error) core.failed(info, error); end
 
     private
 
-      def queue
-        resources.queue
-      end
-
-      def chan
-        context.chan
-      end
-
-      def handler
-        context.handler
+      def core
+        @core ||= Core.new(self, resources, context, Callback)
       end
 
       def resources
-        @resources ||= Resources.new(context)
+        Resources.new(context)
       end
 
       attr_reader :context

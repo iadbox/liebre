@@ -1,8 +1,9 @@
 require 'concurrent'
 
 require 'liebre/actor/rpc/client/resources'
-require 'liebre/actor/rpc/client/task'
 require 'liebre/actor/rpc/client/pending'
+require 'liebre/actor/rpc/client/task'
+require 'liebre/actor/rpc/client/core'
 
 module Liebre
   module Actor
@@ -10,9 +11,7 @@ module Liebre
       class Client
         include Concurrent::Async
 
-        TIMEOUT         = 5
-        OPTS            = {:block => false, :manual_ack => false}
-        EXPIRE_INTERVAL = 60
+        TIMEOUT = 5
 
         def initialize context
           super()
@@ -33,62 +32,31 @@ module Liebre
 
         def expire() async.__expire__(); end
 
-        def __start__
-          response_queue.subscribe(OPTS) do |_info, meta, payload|
-            reply(meta, payload)
-          end
-          request_exchange
+        def __start__() core.start; end
+        def __stop__()  core.stop; end
 
-          task.every(EXPIRE_INTERVAL) { expire }
-        end
+        def __request__(payload, opts, timeout) core.request(payload, opts, timeout); end
 
-        def __stop__
-          response_queue.unsubscribe
-          task.cancel_all
-          chan.close
-        end
+        def __reply__(meta, response) core.reply(meta, response); end
 
-        def __request__ payload, opts = {}, timeout = TIMEOUT
-          pending.add(timeout) do |correlation_id|
-            opts = opts.merge :reply_to       => response_queue.name,
-                              :correlation_id => correlation_id
-
-            request_exchange.publish(payload, opts)
-          end
-        end
-
-        def __reply__ meta, response
-          pending.finish(meta.correlation_id, response)
-        end
-
-        def __expire__
-          pending.expire
-        end
+        def __expire__() core.expire; end
 
       private
 
-        def response_queue
-          resources.response_queue
-        end
-
-        def request_exchange
-          resources.request_exchange
-        end
-
-        def chan
-          context.chan
+        def core
+          @core ||= Core.new(self, resources, context, pending, task)
         end
 
         def resources
-          @resources ||= Resources.new(context)
-        end
-
-        def task
-          @task ||= Task.new
+          Resources.new(context)
         end
 
         def pending
-          @pending ||= Pending.new
+          Pending.new
+        end
+
+        def task
+          Task.new
         end
 
         attr_reader :context

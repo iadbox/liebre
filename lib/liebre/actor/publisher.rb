@@ -1,6 +1,7 @@
 require 'concurrent'
 
 require 'liebre/actor/publisher/resources'
+require 'liebre/actor/publisher/core'
 
 module Liebre
   module Actor
@@ -18,30 +19,19 @@ module Liebre
 
       def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
-      def __start__
-        exchange
-      end
+      def __start__() core.start; end
+      def __stop__()  core.stop;  end
 
-      def __stop__
-        chan.close
-      end
-
-      def __publish__ payload, opts = {}
-        exchange.publish(payload, opts)
-      end
+      def __publish__(payload, opts) core.publish(payload, opts); end
 
     private
 
-      def exchange
-        resources.exchange
-      end
-
-      def chan
-        context.chan
+      def core
+        @core ||= Core.new(resources, context)
       end
 
       def resources
-        @resources ||= Resources.new(context)
+        Resources.new(context)
       end
 
       attr_reader :context
