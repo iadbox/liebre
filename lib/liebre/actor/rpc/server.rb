@@ -2,7 +2,6 @@ require 'concurrent'
 
 require 'liebre/actor/rpc/server/resources'
 require 'liebre/actor/rpc/server/base'
-require 'liebre/actor/rpc/server/extension'
 require 'liebre/actor/rpc/server/callback'
 
 module Liebre
