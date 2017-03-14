@@ -10,7 +10,10 @@ module Liebre
     end
 
     def start
-      connections.each { |_name, conn| conn.start }
+      connections.each do |name, conn|
+        conn.start
+        logger.info("Connection started: #{name.inspect}")
+      end
     end
 
     def open_channel opts
@@ -30,6 +33,10 @@ module Liebre
 
         all.merge!(name => connection)
       end
+    end
+
+    def logger
+      config.logger
     end
 
     def adapter

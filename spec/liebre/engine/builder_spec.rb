@@ -15,7 +15,10 @@ RSpec.describe Liebre::Engine::Builder do
      :actors  => {:publishers => publisher_class}}
   end
 
-  subject { described_class.new(bridge, type, name, opts, dependencies) }
+  let(:logger) { double 'logger' }
+  let(:config) { double 'config', :logger => logger }
+
+  subject { described_class.new(bridge, type, name, opts, config, dependencies) }
 
   describe '#call' do
     let(:chan)      { double 'chan' }
@@ -27,7 +30,7 @@ RSpec.describe Liebre::Engine::Builder do
         with(opts).and_return(chan)
 
       expect(context_class).to receive(:new).
-        with(chan, name, opts).and_return(context)
+        with(chan, name, opts, config).and_return(context)
 
       expect(publisher_class).to receive(:new).
         with(context).and_return(publisher)

@@ -35,7 +35,7 @@ module Liebre
   private
 
     def build type, name, opts
-      builder = Builder.new(bridge, type, name, opts)
+      builder = Builder.new(bridge, type, name, opts, config)
       builder.call
     end
 

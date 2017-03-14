@@ -11,11 +11,12 @@ module Liebre
         :rpc_servers => Actor::RPC::Server
       }
 
-      def initialize bridge, type, name, opts, context: CONTEXT, actors: ACTORS
+      def initialize bridge, type, name, opts, config, context: CONTEXT, actors: ACTORS
         @bridge = bridge
         @type   = type
         @name   = name
         @opts   = opts
+        @config = config
 
         @context_class = context
         @actor_classes = actors
@@ -32,14 +33,14 @@ module Liebre
       end
 
       def context
-        context_class.new(chan, name, opts)
+        context_class.new(chan, name, opts, config)
       end
 
       def chan
         bridge.open_channel(opts)
       end
 
-      attr_reader :bridge, :type, :name, :opts,
+      attr_reader :bridge, :type, :name, :opts, :config,
                   :context_class, :actor_classes
 
     end

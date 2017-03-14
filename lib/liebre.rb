@@ -7,6 +7,8 @@ require "liebre/bridge"
 require "liebre/actor"
 require "liebre/engine"
 
+require "liebre/runner"
+
 module Liebre
 
   def self.config

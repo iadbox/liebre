@@ -38,15 +38,15 @@ RSpec.describe Liebre::Engine do
       expect(bridge).to receive(:start)
 
       expect(described_class::Builder).to receive(:new).
-        with(bridge, :publishers, :one, publisher_1_opts).
+        with(bridge, :publishers, :one, publisher_1_opts, config).
         and_return(builder_1)
 
       expect(described_class::Builder).to receive(:new).
-        with(bridge, :publishers, :two, publisher_2_opts).
+        with(bridge, :publishers, :two, publisher_2_opts, config).
         and_return(builder_2)
 
       expect(described_class::Builder).to receive(:new).
-        with(bridge, :consumers, :three, consumer_opts).
+        with(bridge, :consumers, :three, consumer_opts, config).
         and_return(builder_3)
 
       expect(publisher_1).to receive(:start)

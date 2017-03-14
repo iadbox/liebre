@@ -9,9 +9,12 @@ RSpec.describe Liebre::Bridge do
 
   let(:connections) { {name_1 => opts_1, name_2 => opts_2}}
 
+  let(:logger) { double 'logger', :info => nil }
+
   let :config do
     double 'config', :adapter     => adapter,
-                     :connections => connections
+                     :connections => connections,
+                     :logger      => logger
   end
 
   subject { described_class.new(config) }

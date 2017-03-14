@@ -7,10 +7,12 @@ module Liebre
 
       attr_reader :chan, :name, :opts
 
-      def initialize chan, name, opts
+      def initialize chan, name, opts, config
         @chan = chan
         @name = name
         @opts = opts
+
+        @config = config
       end
 
       def spec
@@ -24,6 +26,14 @@ module Liebre
       def handler
         @handler ||= Handler.new(opts)
       end
+
+      def logger
+        config.logger
+      end
+
+    private
+
+      attr_reader :config
 
     end
   end
