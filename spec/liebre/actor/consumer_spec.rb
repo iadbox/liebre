@@ -10,11 +10,15 @@ RSpec.describe Liebre::Actor::Consumer do
      :bind     => {:fake => "bind_config"}}
   end
 
+  let(:logger) { double 'logger', :info => nil, :error => nil }
+
   let :context do
     double 'context', :chan    => chan,
                       :declare => declare,
+                      :name    => "foo",
                       :handler => handler,
-                      :spec    => spec
+                      :spec    => spec,
+                      :logger  => logger
   end
 
   subject { described_class.new(context) }

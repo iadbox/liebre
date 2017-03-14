@@ -3,6 +3,7 @@ require 'concurrent'
 require 'liebre/actor/rpc/server/resources'
 require 'liebre/actor/rpc/server/callback'
 require 'liebre/actor/rpc/server/core'
+require 'liebre/actor/rpc/server/reporter'
 
 module Liebre
   module Actor
@@ -26,14 +27,24 @@ module Liebre
         def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
         def failed(meta, error)              async.__failed__(meta, error);         end
 
-        def __start__() core.start; end
-        def __stop__()  core.stop;  end
+        def __start__()
+          reporter.on_start { core.start }
+        end
+        def __stop__()
+          reporter.on_stop { core.stop }
+        end
 
-        def __handle__(meta, payload) core.handle(meta, payload); end
+        def __handle__(meta, payload)
+          reporter.on_handle { core.handle(meta, payload) }
+        end
 
-        def __reply__(meta, response, opts) core.reply(meta, response, opts); end
+        def __reply__(meta, response, opts)
+          reporter.on_reply { core.reply(meta, response, opts) }
+        end
 
-        def __failed__(meta, error) core.failed(meta, error); end
+        def __failed__(meta, error)
+          reporter.on_failed { core.failed(meta, error) }
+        end
 
       private
 
@@ -43,6 +54,10 @@ module Liebre
 
         def resources
           Resources.new(context)
+        end
+
+        def reporter
+          @reporter ||= Reporter.new(context)
         end
 
         attr_reader :context

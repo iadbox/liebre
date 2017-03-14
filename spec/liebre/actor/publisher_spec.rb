@@ -3,11 +3,14 @@ RSpec.describe Liebre::Actor::Publisher do
   let(:chan)    { double 'chan' }
   let(:declare) { double 'declare' }
   let(:spec)    { {:exchange => {:fake => "config"}} }
+  let(:logger)  { double 'logger', :info => nil, :error => nil }
 
   let :context do
     double 'context', :chan    => chan,
                       :declare => declare,
-                      :spec    => spec
+                      :name    => "foo",
+                      :spec    => spec,
+                      :logger  => logger
   end
 
   subject { described_class.new(context) }

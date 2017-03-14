@@ -2,6 +2,7 @@ require 'concurrent'
 
 require 'liebre/actor/publisher/resources'
 require 'liebre/actor/publisher/core'
+require 'liebre/actor/publisher/reporter'
 
 module Liebre
   module Actor
@@ -19,10 +20,16 @@ module Liebre
 
       def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
-      def __start__() core.start; end
-      def __stop__()  core.stop;  end
+      def __start__
+        reporter.on_start { core.start }
+      end
+      def __stop__
+        reporter.on_stop { core.stop }
+      end
 
-      def __publish__(payload, opts) core.publish(payload, opts); end
+      def __publish__ payload, opts
+        reporter.on_publish { core.publish(payload, opts) }
+      end
 
     private
 
@@ -32,6 +39,10 @@ module Liebre
 
       def resources
         Resources.new(context)
+      end
+
+      def reporter
+        @reporter ||= Reporter.new(context)
       end
 
       attr_reader :context

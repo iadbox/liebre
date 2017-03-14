@@ -4,6 +4,7 @@ require 'liebre/actor/rpc/client/resources'
 require 'liebre/actor/rpc/client/pending'
 require 'liebre/actor/rpc/client/task'
 require 'liebre/actor/rpc/client/core'
+require 'liebre/actor/rpc/client/reporter'
 
 module Liebre
   module Actor
@@ -32,14 +33,24 @@ module Liebre
 
         def expire() async.__expire__(); end
 
-        def __start__() core.start; end
-        def __stop__()  core.stop; end
+        def __start__()
+          reporter.on_start { core.start }
+        end
+        def __stop__()
+          reporter.on_stop { core.stop }
+        end
 
-        def __request__(payload, opts, timeout) core.request(payload, opts, timeout); end
+        def __request__(payload, opts, timeout)
+          reporter.on_request { core.request(payload, opts, timeout) }
+        end
 
-        def __reply__(meta, response) core.reply(meta, response); end
+        def __reply__(meta, response)
+          reporter.on_reply { core.reply(meta, response) }
+        end
 
-        def __expire__() core.expire; end
+        def __expire__()
+          reporter.on_expire { core.expire }
+        end
 
       private
 
@@ -57,6 +68,10 @@ module Liebre
 
         def task
           Task.new
+        end
+
+        def reporter
+          @reporter ||= Reporter.new(context)
         end
 
         attr_reader :context
