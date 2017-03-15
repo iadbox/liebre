@@ -4,25 +4,43 @@ require 'liebre/bridge/channel_builder'
 
 module Liebre
   class Bridge
+    NotStarted = Class.new(StandardError)
 
     def initialize config
-      @config = config
+      @config  = config
+      @started = false
+    end
+
+    def started?
+      @started
     end
 
     def start
-      connections.each do |name, conn|
-        conn.start
-        logger.info("Connection started: #{name.inspect}")
+      if not started?
+        connections.each do |name, conn|
+          conn.start
+          logger.info("Connection started: #{name.inspect}")
+        end
+
+        self.started = true
       end
     end
 
     def open_channel opts
-      builder = ChannelBuilder.new(connections, opts)
-      builder.call
+      if started?
+        builder = ChannelBuilder.new(connections, opts)
+        builder.call
+      else
+        raise NotStarted
+      end
     end
 
     def stop
-      connections.each { |_name, conn| conn.stop }
+      if started?
+        connections.each { |_name, conn| conn.stop }
+
+        self.started = false
+      end
     end
 
   private
@@ -48,6 +66,7 @@ module Liebre
     end
 
     attr_reader :config
+    attr_writer :started
 
   end
 end

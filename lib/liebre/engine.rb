@@ -1,4 +1,4 @@
-require "liebre/engine/parser"
+require "liebre/engine/state"
 require "liebre/engine/builder"
 
 require "liebre/engine/repository"
@@ -7,34 +7,24 @@ module Liebre
   class Engine
 
     def initialize config
-      @config  = config
-      @started = false
+      @config = config
     end
 
     def start only: nil
-      if not started
-        bridge.start
+      bridge.start
 
-        parser.each(only) do |type, name, opts|
-          actor = build(type, name, opts)
-          config.logger.info("about to start: #{type} - #{name}")
-          actor.start
+      state.to_start(only: only) do |type, name, opts|
+        actor = build(type, name, opts)
+        actor.start
 
-          repo.insert(type, name, actor)
-        end
-
-        self.started = true
+        repo.insert(type, name, actor)
       end
     end
 
     def stop
-      if started
-        repo.each(&:stop)
-        repo.clear
-        bridge.stop
-
-        self.started = false
-      end
+      repo.each(&:stop)
+      repo.clear
+      bridge.stop
     end
 
     def repo
@@ -48,8 +38,8 @@ module Liebre
       builder.call
     end
 
-    def parser
-      Parser.new(config.actors)
+    def state
+      @state ||= State.new(config.actors)
     end
 
     def bridge
@@ -57,7 +47,6 @@ module Liebre
     end
 
     attr_reader :config
-    attr_accessor :started
 
   end
 end
