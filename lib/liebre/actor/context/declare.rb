@@ -26,7 +26,7 @@ module Liebre
           chan.queue(name, opts)
         end
 
-        def bind queue, exchange, config
+        def bind queue, exchange, config = {}
           all_opts = [config].flatten
 
           all_opts.each do |opts|

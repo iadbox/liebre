@@ -1,3 +1,5 @@
+require 'liebre/actor/consumer/resources/config'
+
 module Liebre
   module Actor
     class Consumer
@@ -8,35 +10,33 @@ module Liebre
         end
 
         def queue
-          @queue ||= declare.queue(queue_config).tap do |queue|
-            declare.bind(queue, exchange, bind_config)
+          @queue ||= declare.queue(config.queue).tap do |queue|
+            declare.bind(queue, exchange, config.bind)
           end
         end
 
         def exchange
-          @exchange ||= declare.exchange(exchange_config)
+          @exchange ||= declare.exchange(config.exchange)
+        end
+
+        def dead_queue
+          @dead_queue ||= declare.queue(config.dead_queue).tap do |queue|
+            declare.bind(queue, exchange)
+          end
+        end
+
+        def dead_exchange
+          @dead_exchange ||= declare.exchange(config.dead_exchange)
         end
 
       private
 
-        def exchange_config
-          spec.fetch(:exchange)
-        end
-
-        def queue_config
-          spec.fetch(:queue)
-        end
-
-        def bind_config
-          spec.fetch(:bind, {})
-        end
-
-        def spec
-          context.spec
-        end
-
         def declare
           context.declare
+        end
+
+        def config
+          @config ||= Config.new(context.spec)
         end
 
         attr_reader :context

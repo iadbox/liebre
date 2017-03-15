@@ -5,8 +5,8 @@ RSpec.describe Liebre::Actor::Consumer do
   let(:handler) { double 'handler' }
 
   let :spec do
-    {:exchange => {:fake => "exchange_config"},
-     :queue    => {:fake => "queue_config"},
+    {:exchange => {:name => "foo"},
+     :queue    => {:name => "bar"},
      :bind     => {:fake => "bind_config"}}
   end
 
@@ -26,17 +26,33 @@ RSpec.describe Liebre::Actor::Consumer do
   let(:queue)    { double 'queue' }
   let(:exchange) { double 'exchange' }
 
+  let(:dead_queue)    { double 'dead_queue' }
+  let(:dead_exchange) { double 'dead_exchange' }
+
+  let(:dead_letter_opts) do
+    {:arguments => {"x-dead-letter-exchange" => "bar-error"}}
+  end
+
   before do
     allow(subject).to receive(:async).and_return(subject)
 
     allow(declare).to receive(:queue).
-      with(:fake => "queue_config").and_return(queue)
+      with(:name => "bar", :opts => dead_letter_opts).and_return(queue)
 
     allow(declare).to receive(:exchange).
-      with(:fake => "exchange_config").and_return(exchange)
+      with(:name => "foo").and_return(exchange)
+
+    allow(declare).to receive(:queue).
+      with(:name => "bar-error", :opts => {}).and_return(dead_queue)
+
+    allow(declare).to receive(:exchange).
+      with(:name => "bar-error", :type => "fanout", :opts => {}).and_return(dead_exchange)
 
     allow(declare).to receive(:bind).
       with(queue, exchange, :fake => "bind_config")
+
+    allow(declare).to receive(:bind).
+      with(dead_queue, dead_exchange)
   end
 
   let(:info)    { double 'info' }
@@ -46,13 +62,22 @@ RSpec.describe Liebre::Actor::Consumer do
   describe '#start' do
     it 'declares and binds queue and exchange, and subscribes to the queue' do
       expect(declare).to receive(:queue).
-        with(:fake => "queue_config").and_return(queue)
+        with(:name => "bar", :opts => dead_letter_opts).and_return(queue)
 
       expect(declare).to receive(:exchange).
-        with(:fake => "exchange_config").and_return(exchange)
+        with(:name => "foo").and_return(exchange)
 
       expect(declare).to receive(:bind).
         with(queue, exchange, :fake => "bind_config")
+
+      expect(declare).to receive(:queue).
+        with(:name => "bar-error", :opts => {}).and_return(dead_queue)
+
+      expect(declare).to receive(:exchange).
+        with(:name => "bar-error", :type => "fanout", :opts => {}).and_return(dead_exchange)
+
+      expect(declare).to receive(:bind).
+        with(dead_queue, dead_exchange)
 
       subscription_block = nil
       expect(queue).to receive(:subscribe) do |opts, &block|
