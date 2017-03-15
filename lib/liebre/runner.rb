@@ -19,8 +19,8 @@ module Liebre
   private
 
     def setup_signals
-      Signal.trap("TERM") { do_shutdown; exit }
-      Signal.trap("USR1") { do_shutdown; exit }
+      Signal.trap("TERM") { do_stop; exit }
+      Signal.trap("USR1") { do_stop; exit }
     end
 
     def do_stop
