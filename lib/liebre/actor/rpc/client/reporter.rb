@@ -11,38 +11,38 @@ module Liebre
           def on_start
             yield
             logger.info("RPC client started: #{name}")
-          rescue Exception => e
+          rescue Exception => error
             logger.error("Error starting RPC client: #{name}\n#{error.message}\n#{error.backtrace}")
-            raise e
+            raise error
           end
 
           def on_stop
             yield
             logger.info("RPC client stopped: #{name}")
-          rescue Exception => e
+          rescue Exception => error
             logger.error("Error stopping RPC client: #{name}\n#{error.message}\n#{error.backtrace}")
-            raise e
+            raise error
           end
 
           def on_request
             yield
-          rescue Exception => e
+          rescue Exception => error
             logger.error("Error performing request: #{name}\n#{error.message}\n#{error.backtrace}")
-            raise e
+            raise error
           end
 
           def on_reply
             yield
-          rescue Exception => e
+          rescue Exception => error
             logger.error("Error receiving request reply: #{name}\n#{error.message}\n#{error.backtrace}")
-            raise e
+            raise error
           end
 
           def on_expire
             yield
-          rescue Exception => e
+          rescue Exception => error
             logger.error("Error expiring RPC client pending requests: #{name}\n#{error.message}\n#{error.backtrace}")
-            raise e
+            raise error
           end
 
         private
