@@ -7,26 +7,34 @@ module Liebre
   class Engine
 
     def initialize config
-      @config = config
+      @config  = config
+      @started = false
     end
 
     def start only: nil
-      bridge.start
+      if not started
+        bridge.start
 
-      parser.each(only) do |type, name, opts|
-        actor = build(type, name, opts)
-        config.logger.info("about to start: #{type} - #{name}")
-        actor.start
+        parser.each(only) do |type, name, opts|
+          actor = build(type, name, opts)
+          config.logger.info("about to start: #{type} - #{name}")
+          actor.start
 
-        repo.insert(type, name, actor)
+          repo.insert(type, name, actor)
+        end
+
+        self.started = true
       end
     end
 
     def stop
-      repo.each(&:stop)
-      bridge.stop
+      if started
+        repo.each(&:stop)
+        repo.clear
+        bridge.stop
 
-      repo.clear
+        self.started = false
+      end
     end
 
     def repo
@@ -49,6 +57,7 @@ module Liebre
     end
 
     attr_reader :config
+    attr_accessor :started
 
   end
 end
