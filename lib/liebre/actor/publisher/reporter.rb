@@ -10,14 +10,14 @@ module Liebre
         def on_start
           yield
           logger.info("Publisher started: #{name}")
-        rescue => e
+        rescue Exception => e
           logger.error("Error starting publisher: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_publish
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error publising: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
@@ -25,7 +25,7 @@ module Liebre
         def on_stop
           yield
           logger.info("Publisher stopped: #{name}")
-        rescue => e
+        rescue Exception => e
           logger.error("Error stopping publisher: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end

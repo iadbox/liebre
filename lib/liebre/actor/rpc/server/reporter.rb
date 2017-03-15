@@ -11,7 +11,7 @@ module Liebre
           def on_start
             yield
             logger.info("RPC server started: #{name}")
-          rescue => e
+          rescue Exception => e
             logger.error("Error starting RPC server: #{name}\n#{error.message}\n#{error.backtrace}")
             raise e
           end
@@ -19,28 +19,28 @@ module Liebre
           def on_stop
             yield
             logger.info("RPC server stopped: #{name}")
-          rescue => e
+          rescue Exception => e
             logger.error("Error stopping RPC server: #{name}\n#{error.message}\n#{error.backtrace}")
             raise e
           end
 
           def on_handle
             yield
-          rescue => e
+          rescue Exception => e
             logger.error("Error handling request: #{name}\n#{error.message}\n#{error.backtrace}")
             raise e
           end
 
           def on_reply
             yield
-          rescue => e
+          rescue Exception => e
             logger.error("Error replying request: #{name}\n#{error.message}\n#{error.backtrace}")
             raise e
           end
 
           def on_failed
             yield
-          rescue => e
+          rescue Exception => e
             logger.error("Error handling RPC server handler failure: #{name}\n#{error.message}\n#{error.backtrace}")
             raise e
           end

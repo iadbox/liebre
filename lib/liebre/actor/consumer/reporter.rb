@@ -11,7 +11,7 @@ module Liebre
           logger.info("About to subscribe: #{name}")
           yield
           logger.info("Consumer started: #{name}")
-        rescue => e
+        rescue Exception => e
           logger.error("Error starting consumer: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
@@ -19,42 +19,42 @@ module Liebre
         def on_stop
           yield
           logger.info("Consumer stopped: #{name}")
-        rescue => e
+        rescue Exception => e
           logger.error("Error stopping consumer: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_consume
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error consuming: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_ack
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error acking: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_nack
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error nacking: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_reject
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error rejecting: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
 
         def on_failed
           yield
-        rescue => e
+        rescue Exception => e
           logger.error("Error handling consumer handler failure: #{name}\n#{error.message}\n#{error.backtrace}")
           raise e
         end
