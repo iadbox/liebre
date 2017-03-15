@@ -15,6 +15,7 @@ module Liebre
 
       parser.each(only) do |type, name, opts|
         actor = build(type, name, opts)
+        config.logger.info("about to start: #{type} - #{name}")
         actor.start
 
         repo.insert(type, name, actor)
