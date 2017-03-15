@@ -27,7 +27,7 @@ module Liebre
           end
 
           def handle meta, payload
-            callback = Callback.new(server, meta)
+            callback = callback_class.new(server, meta)
 
             handler.call(payload, meta, callback) do |error|
               callback.failed(error)
