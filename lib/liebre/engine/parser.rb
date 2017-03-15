@@ -6,15 +6,19 @@ module Liebre
         @config = config
       end
 
-      def each
+      def each only
         config.each do |type, specs|
           specs.each do |name, opts|
-            yield(type, name, opts)
+            yield(type, name, opts) if match?(type, only)
           end
         end
       end
 
     private
+
+      def match? type, only
+        only.nil? or only.include?(type)
+      end
 
       attr_reader :config
 

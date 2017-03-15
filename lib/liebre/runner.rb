@@ -7,9 +7,9 @@ module Liebre
       @engine = engine
     end
 
-    def run
+    def run only: nil
       setup_signals
-      engine.start
+      engine.start(only: only)
       sleep
     rescue => e
       sleep(RETRY_INTERVAL)

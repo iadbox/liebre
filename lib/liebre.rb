@@ -11,6 +11,11 @@ require "liebre/runner"
 
 module Liebre
 
+  def self.start only: nil
+    runner = Runner.new(engine: Liebre.engine)
+    runner.run(only: only)
+  end
+
   def self.config
     @config ||= Config.new
   end

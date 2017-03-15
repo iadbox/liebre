@@ -10,10 +10,10 @@ module Liebre
       @config = config
     end
 
-    def start
+    def start only: nil
       bridge.start
 
-      parser.each do |type, name, opts|
+      parser.each(only) do |type, name, opts|
         actor = build(type, name, opts)
         actor.start
 
