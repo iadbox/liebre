@@ -27,6 +27,8 @@ module Liebre
         def reply(meta, response, opts = {}) async.__reply__(meta, response, opts); end
         def failed(meta, error)              async.__failed__(meta, error);         end
 
+        def clean() async.__clean__(); end
+
         def __start__()
           reporter.on_start { core.start }
         end
@@ -44,6 +46,10 @@ module Liebre
 
         def __failed__(meta, error)
           reporter.on_failed { core.failed(meta, error) }
+        end
+
+        def __clean__
+          reporter.on_clean { core.clean() }
         end
 
       private

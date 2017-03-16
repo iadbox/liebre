@@ -20,6 +20,8 @@ module Liebre
 
       def publish(payload, opts = {}) async.__publish__(payload, opts); end
 
+      def clean() async.__clean__(); end
+
       def __start__
         reporter.on_start { core.start }
       end
@@ -29,6 +31,10 @@ module Liebre
 
       def __publish__ payload, opts
         reporter.on_publish { core.publish(payload, opts) }
+      end
+
+      def __clean__
+        reporter.on_clean { core.clean() }
       end
 
     private

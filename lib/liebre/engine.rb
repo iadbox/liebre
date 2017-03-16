@@ -21,6 +21,15 @@ module Liebre
       end
     end
 
+    def clean only: nil
+      bridge.start
+
+      state.to_clean(only: only) do |type, name, opts|
+        actor = build(type, name, opts)
+        actor.clean
+      end
+    end
+
     def stop
       repo.each(&:stop)
       repo.clear

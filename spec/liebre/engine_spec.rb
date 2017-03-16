@@ -25,7 +25,7 @@ RSpec.describe Liebre::Engine do
       with(config).and_return(bridge)
   end
 
-  describe '#start, #repo and #stop' do
+  describe '#start, #clean, #repo and #stop' do
     let(:publisher_1) { double 'publisher_1' }
     let(:publisher_2) { double 'publisher_2' }
     let(:consumer)    { double 'consumer' }
@@ -35,25 +35,40 @@ RSpec.describe Liebre::Engine do
     let(:builder_3) { double 'builder_3', :call => consumer }
 
     it 'starts the bridge and all actors' do
-      expect(bridge).to receive(:start)
+      expect(bridge).to receive(:start).
+        twice
 
       expect(described_class::Builder).to receive(:new).
         with(bridge, :publishers, :one, publisher_1_opts, config).
-        and_return(builder_1)
+        and_return(builder_1).
+        twice
 
       expect(described_class::Builder).to receive(:new).
         with(bridge, :publishers, :two, publisher_2_opts, config).
-        and_return(builder_2)
+        and_return(builder_2).
+        twice
 
       expect(described_class::Builder).to receive(:new).
         with(bridge, :consumers, :three, consumer_opts, config).
-        and_return(builder_3)
+        and_return(builder_3).
+        twice
 
       expect(publisher_1).to receive(:start)
       expect(publisher_2).to receive(:start)
       expect(consumer   ).to receive(:start)
 
       subject.start
+
+      expect(publisher_1).to receive(:clean)
+      expect(publisher_2).to receive(:clean)
+      expect(consumer   ).to receive(:clean)
+
+      subject.clean
+
+      repo = subject.repo
+      expect(repo.publisher(:one) ).to eq publisher_1
+      expect(repo.publisher(:two) ).to eq publisher_2
+      expect(repo.consumer(:three)).to eq consumer
 
       repo = subject.repo
       expect(repo.publisher(:one) ).to eq publisher_1

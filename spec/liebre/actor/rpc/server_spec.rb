@@ -80,6 +80,15 @@ RSpec.describe Liebre::Actor::RPC::Server do
     end
   end
 
+  describe '#clean' do
+    it 'deletes queue and exchange' do
+      expect(request_queue    ).to receive(:delete)
+      expect(response_exchange).to receive(:delete)
+
+      subject.clean
+    end
+  end
+
   describe '#handle' do
     context 'on success' do
       let(:response) { "some_response" }

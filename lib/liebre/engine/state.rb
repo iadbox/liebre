@@ -16,10 +16,20 @@ module Liebre
         end
       end
 
+      def to_clean only: nil
+        all do |type, name, opts|
+          yield(type, name, opts) if match?(type, only)
+        end
+      end
+
     private
 
       def has_to_start? type, name, only
-        started[type][name].nil? and (only.nil? or only.include?(type))
+        started[type][name].nil? and match?(type, only)
+      end
+
+      def match? type, only
+        only.nil? or only.include?(type)
       end
 
       def set_started type, name

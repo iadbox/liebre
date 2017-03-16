@@ -20,6 +20,10 @@ module Liebre
           exchange.publish(payload, opts)
         end
 
+        def clean
+          exchange.delete
+        end
+
       private
 
         def exchange

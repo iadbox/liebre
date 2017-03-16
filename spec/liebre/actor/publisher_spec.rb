@@ -21,12 +21,25 @@ RSpec.describe Liebre::Actor::Publisher do
 
   let(:exchange) { double 'exchange' }
 
+  before do
+    allow(declare).to receive(:exchange).
+      with(:fake => "config").and_return(exchange)
+  end
+
   describe '#start' do
     it 'declares the exchange' do
       expect(declare).to receive(:exchange).
         with(:fake => "config").and_return(exchange)
 
       subject.start
+    end
+  end
+
+  describe '#clean' do
+    it 'deletes the exchange' do
+      expect(exchange).to receive(:delete)
+
+      subject.clean
     end
   end
 

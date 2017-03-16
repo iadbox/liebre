@@ -7,8 +7,7 @@ require 'liebre/actor/rpc/client/core'
 require 'liebre/actor/rpc/client/reporter'
 
 module Liebre
-  module Actor
-    module RPC
+  module Actor module RPC
       class Client
         include Concurrent::Async
 
@@ -33,6 +32,8 @@ module Liebre
 
         def expire() async.__expire__(); end
 
+        def clean() async.__clean__(); end
+
         def __start__()
           reporter.on_start { core.start }
         end
@@ -49,7 +50,11 @@ module Liebre
         end
 
         def __expire__()
-          reporter.on_expire { core.expire }
+          reporter.on_expire { core.expire() }
+        end
+
+        def __clean__()
+          reporter.on_clean { core.clean() }
         end
 
       private

@@ -44,6 +44,11 @@ module Liebre
           def failed meta, error
           end
 
+          def clean
+            queue.delete
+            exchange.delete
+          end
+
         private
 
           def queue

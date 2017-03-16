@@ -40,14 +40,29 @@ module Liebre
           queue.reject(info, {})
         end
 
+        def clean
+          queue.delete
+          exchange.delete
+          dead_queue.delete
+          dead_exchange.delete
+        end
+
       private
 
         def queue
           resources.queue
         end
 
+        def exchange
+          resources.exchange
+        end
+
         def dead_queue
           resources.dead_queue
+        end
+
+        def dead_exchange
+          resources.dead_exchange
         end
 
         def chan

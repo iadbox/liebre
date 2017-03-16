@@ -86,6 +86,15 @@ RSpec.describe Liebre::Actor::RPC::Client do
     end
   end
 
+  describe '#clean' do
+    it 'deletes queue and exchange' do
+      expect(response_queue  ).to receive(:delete)
+      expect(request_exchange).to receive(:delete)
+
+      subject.clean
+    end
+  end
+
   describe '#request and #reply' do
     it 'replies and releases the client only when a matching response is received' do
       correlation_id = nil

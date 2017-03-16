@@ -59,6 +59,13 @@ module Liebre
           raise error
         end
 
+        def on_clean
+          yield
+        rescue Exception => error
+          logger.error("Error cleaning consumer: #{name}\n#{error.message}\n#{error.backtrace}")
+          raise error
+        end
+
       private
 
         def name

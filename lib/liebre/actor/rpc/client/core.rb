@@ -47,6 +47,11 @@ module Liebre
             pending.expire
           end
 
+          def clean
+            request_exchange.delete
+            response_queue.delete
+          end
+
         private
 
           def response_queue

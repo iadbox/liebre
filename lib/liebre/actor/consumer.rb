@@ -28,6 +28,8 @@ module Liebre
       def reject(info, opts = {}) async.__reject__(info, opts);  end
       def failed(info, error)     async.__failed__(info, error); end
 
+      def clean() async.__clean__(); end
+
       def __start__
         reporter.on_start { core.start }
       end
@@ -51,6 +53,10 @@ module Liebre
 
       def __failed__(info, error)
         reporter.on_failed { core.failed(info, error) }
+      end
+
+      def __clean__
+        reporter.on_clean { core.clean() }
       end
 
     private

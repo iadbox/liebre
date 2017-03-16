@@ -94,6 +94,17 @@ RSpec.describe Liebre::Actor::Consumer do
     end
   end
 
+  describe '#clean' do
+    it 'deletes all queues and exchanges' do
+      expect(queue        ).to receive(:delete)
+      expect(exchange     ).to receive(:delete)
+      expect(dead_queue   ).to receive(:delete)
+      expect(dead_exchange).to receive(:delete)
+
+      subject.clean
+    end
+  end
+
   describe '#consume' do
     context 'on success' do
       it 'runs the handler with a callbacks object' do
