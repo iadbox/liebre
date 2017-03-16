@@ -25,7 +25,6 @@ module Liebre
           end
 
           def stop
-            response_queue.unsubscribe
             task.cancel_all
             chan.close
           end

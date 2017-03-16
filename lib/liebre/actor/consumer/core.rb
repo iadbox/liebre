@@ -20,7 +20,6 @@ module Liebre
         end
 
         def stop
-          queue.unsubscribe
           chan.close
         end
 
