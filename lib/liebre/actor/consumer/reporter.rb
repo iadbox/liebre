@@ -8,7 +8,6 @@ module Liebre
         end
 
         def on_start
-          logger.info("About to subscribe: #{name}")
           yield
           logger.info("Consumer started: #{name}")
         rescue Exception => error
