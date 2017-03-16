@@ -21,7 +21,7 @@ module Liebre
 
         def dead_queue
           @dead_queue ||= declare.queue(config.dead_queue).tap do |queue|
-            declare.bind(queue, exchange)
+            declare.bind(queue, dead_exchange)
           end
         end
 

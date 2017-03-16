@@ -16,6 +16,7 @@ module Liebre
           queue.subscribe(OPTS) do |info, meta, payload|
             consumer.consume(info, meta, payload)
           end
+          dead_queue
         end
 
         def stop
@@ -43,6 +44,10 @@ module Liebre
 
         def queue
           resources.queue
+        end
+
+        def dead_queue
+          resources.dead_queue
         end
 
         def chan
