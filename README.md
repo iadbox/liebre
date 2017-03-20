@@ -362,7 +362,7 @@ end
 ```
 
 The handler above will print `"yay!"` and ack the message when the payload is `"0"`,
-print "wtf!" and reject the message when the payload is "1", and will raise (and therefore
+print `"wtf!"` and reject the message when the payload is `"1"`, and will raise (and therefore
 will be rejected by liebre) when the handler raises an error.
 
 The `:resources` section of the actor's configuration requires the exchange and the queue,
@@ -418,8 +418,8 @@ another with the `"other"` routing key).
 
 It starts a thread pool of 5 threads and starts consuming messages.
 
-For each message the consumer receives it instantiates and runs `#call` on
-the new handler in one of the threads of its pool.
+For each message the consumer receives a handler is instantiated and `#call` is called on
+it in one of the threads of its pool.
 
 ### RPC Client
 
