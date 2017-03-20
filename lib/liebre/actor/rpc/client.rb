@@ -7,7 +7,8 @@ require 'liebre/actor/rpc/client/core'
 require 'liebre/actor/rpc/client/reporter'
 
 module Liebre
-  module Actor module RPC
+  module Actor
+    module RPC
       class Client
         include Concurrent::Async
 
