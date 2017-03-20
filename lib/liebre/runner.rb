@@ -1,65 +1,33 @@
 module Liebre
   class Runner
-    
-    autoload :Consumers, 'liebre/runner/consumers'
-    autoload :Starter,   'liebre/runner/starter'
-    
+
     RETRY_INTERVAL = 5
 
-    def initialize retry_interval = RETRY_INTERVAL
-      @retry_interval = retry_interval
+    def initialize engine: Liebre.engine
+      @engine = engine
     end
 
-    def start
-      setup_shutdown
-      connection_manager.restart
-      start_consumers
+    def run only: nil
+      setup_signals
+      engine.start(only: only)
       sleep
-    rescue StandardError => e
-      log_and_wait(e)
+    rescue => e
+      sleep(RETRY_INTERVAL)
       retry
     end
 
-    private
+  private
 
-    def setup_shutdown
-      Signal.trap("TERM") { do_shutdown; exit }
-      Signal.trap("USR1") { do_shutdown; exit }
+    def setup_signals
+      Signal.trap("TERM") { do_stop; exit }
+      Signal.trap("USR1") { do_stop; exit }
     end
 
-    def do_shutdown
-      Thread.start do
-        logger.info("Liebre# Closing AMQP connection...")
-        consumers.stop
-        connection_manager.stop
-        logger.info("Liebre# AMQP connection closed")
-      end.join
+    def do_stop
+      Thread.new { engine.stop }.join
     end
 
-    def start_consumers
-      logger.info("Liebre# Starting consumers...")
-      consumers.start_all
-    end
-
-    def log_and_wait e
-      logger.warn(e)
-      sleep(retry_interval)
-      logger.warn("Liebre# Retrying connection")
-    end
-
-    def logger
-      Liebre.logger
-    end
-    
-    def consumers
-      @consumers ||= Consumers.new(connection_manager)
-    end
-
-    def connection_manager
-      @connection_manager ||= ConnectionManager.instance
-    end
-
-    attr_reader :retry_interval
+    attr_reader :engine
 
   end
 end

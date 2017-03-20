@@ -1,24 +1,35 @@
 require "liebre/version"
-require "bunny"
+
+require "liebre/adapter"
+require "liebre/config"
+
+require "liebre/bridge"
+require "liebre/actor"
+require "liebre/engine"
+
+require "liebre/runner"
 
 module Liebre
-  
-  autoload :Common,            'liebre/common'
-  autoload :Config,            'liebre/config'
-  autoload :ConnectionManager, 'liebre/connection_manager'
-  autoload :Publisher,         'liebre/publisher'
-  autoload :Runner,            'liebre/runner'
-  
+
+  def self.start only: nil
+    runner = Runner.new(engine: Liebre.engine)
+    runner.run(only: only)
+  end
+
   def self.config
     @config ||= Config.new
   end
-  
-  def self.env
-    Config.env
+
+  def self.engine
+    @engine ||= Engine.new(config)
   end
-  
-  def self.logger
-    Config.logger
+
+  def self.repo
+    engine.repo
   end
-  
+
+  def self.configure
+    yield(config)
+  end
+
 end
