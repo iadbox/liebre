@@ -40,12 +40,11 @@ module Liebre
           end
 
           def reply meta, response
-            context.logger.info("about to finish correlation_id: #{meta.correlation_id}")
             pending.finish(meta.correlation_id, response)
           end
 
           def expire
-            pending.expire(context.logger)
+            pending.expire()
           end
 
           def clean

@@ -28,14 +28,12 @@ module Liebre
             end
           end
 
-          def expire logger
+          def expire
             now = current_time
 
-            logger.info("Pending before expiration: #{pending.inspect}")
             pending.delete_if do |_correlation_id, request|
               now - request.start_time > timeout
             end
-            logger.info("Pending after expiration: #{pending.inspect}")
           end
 
         private
