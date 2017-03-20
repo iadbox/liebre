@@ -2,6 +2,8 @@
 
 A library to interact with AMQP servers.
 
+Liebre stands for hare in spanish.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -27,6 +29,9 @@ The Liebre library provides 4 abstractions, or **actors**, to interact with the 
 
 Each actor has its own thread and its own channel.  Some actors (Consumer and RPC Server)
 also have their own thread pool in order to be able to handle messages concurrently.
+
+It leverages [concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby) `Concurrent::Async` mixin to
+implement the actors.
 
 ## Configuration
 
