@@ -45,7 +45,7 @@ module Liebre
         end
 
         def __failed__(meta, error)
-          reporter.on_failed { core.failed(meta, error) }
+          reporter.on_failed(error) { core.failed(meta, error) }
         end
 
         def __clean__
