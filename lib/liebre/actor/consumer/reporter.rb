@@ -52,7 +52,7 @@ module Liebre
         end
 
         def on_failed error
-          logger.error("Error when handling a message #{name}\n#{error.message}\n#{error.backtrace}")
+          logger.error("Error on Consumer when handling a message #{name}\n#{error.message}\n#{error.backtrace}")
           yield
         rescue Exception => error
           logger.error("Error handling consumer handler failure: #{name}\n#{error.message}\n#{error.backtrace}")

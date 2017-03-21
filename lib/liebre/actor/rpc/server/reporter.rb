@@ -38,7 +38,8 @@ module Liebre
             raise error
           end
 
-          def on_failed
+          def on_failed(error)
+            logger.error("Error on RPC server when handling a message #{name}\n#{error.message}\n#{error.backtrace}")
             yield
           rescue Exception => error
             logger.error("Error handling RPC server handler failure: #{name}\n#{error.message}\n#{error.backtrace}")
