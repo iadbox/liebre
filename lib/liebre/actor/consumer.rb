@@ -52,7 +52,7 @@ module Liebre
       end
 
       def __failed__(info, error)
-        reporter.on_failed { core.failed(info, error) }
+        reporter.on_failed(error) { core.failed(info, error) }
       end
 
       def __clean__

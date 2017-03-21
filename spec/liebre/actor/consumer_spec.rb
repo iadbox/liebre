@@ -149,6 +149,8 @@ RSpec.describe Liebre::Actor::Consumer do
   end
 
   describe '#ack, #nack, #reject and #failed' do
+    let(:error) { double 'error', :message => "foo", :backtrace => [] }
+
     it 'delegates to the queue' do
       expect(queue).to receive(:ack).with(info, {})
       subject.ack(info)
@@ -160,7 +162,7 @@ RSpec.describe Liebre::Actor::Consumer do
       subject.reject(info, :requeue => true)
 
       expect(queue).to receive(:reject).with(info, {})
-      subject.failed(info, :some_error)
+      subject.failed(info, error)
     end
   end
 
