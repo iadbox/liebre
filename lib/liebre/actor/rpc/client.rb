@@ -69,7 +69,7 @@ module Liebre
         end
 
         def pending
-          Pending.new
+          Pending.new(context)
         end
 
         def task
