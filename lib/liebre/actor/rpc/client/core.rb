@@ -30,7 +30,7 @@ module Liebre
           end
 
           def request payload, opts, timeout
-            pending.add(timeout) do |correlation_id|
+            r = pending.add(timeout) do |correlation_id|
               opts = opts.merge :reply_to       => response_queue.name,
                                 :correlation_id => correlation_id
 
@@ -40,9 +40,7 @@ module Liebre
           end
 
           def reply meta, response
-            context.logger.info("about to finish - correlation_id: #{meta.correlation_id}")
-            request = pending.finish(meta.correlation_id, response)
-            context.logger.info("finished - correlation_id: #{meta.correlation_id}; request: #{request}")
+            pending.finish(meta.correlation_id, response)
           end
 
           def expire
