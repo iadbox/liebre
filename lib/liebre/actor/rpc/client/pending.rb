@@ -9,9 +9,8 @@ module Liebre
 
           Request = Struct.new(:ivar, :expiration_time)
 
-          def initialize context
+          def initialize
             @pending = {}
-            @context = context
           end
 
           def add timeout
@@ -20,7 +19,6 @@ module Liebre
               yield(correlation_id)
 
               store(correlation_id, ivar, timeout)
-              context.logger("PENDING (add #{correlation_id}): #{pending.inspect}")
             end
           end
 
@@ -28,7 +26,6 @@ module Liebre
             pending.delete(correlation_id).tap do |request|
               request.ivar.set(response) if request
             end
-            context.logger("PENDING (finish #{correlation_id}): #{pending.inspect}")
           end
 
           def expire
@@ -37,7 +34,6 @@ module Liebre
             pending.delete_if do |_correlation_id, request|
               now > request.expiration_time
             end
-            context.logger("PENDING (expire): #{pending.inspect}")
           end
 
         private
@@ -60,7 +56,7 @@ module Liebre
             Time.now
           end
 
-          attr_reader :pending, :context
+          attr_reader :pending
 
         end
       end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    liebre (0.2.1)
+    liebre (0.2.0)
       concurrent-ruby
 
 GEM
